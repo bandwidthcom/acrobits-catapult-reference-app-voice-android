@@ -1,0 +1,23 @@
+<resources xmlns:tools="http://schemas.android.com/tools" xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="@style/Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="android:actionBarStyle">@style/BlueActionBar</item>
+        <item name="actionBarStyle">@style/BlueActionBar</item>
+    </style>
+
+    <!-- ActionBar style -->
+    <style name="BlueActionBar"
+        parent="@style/Widget.AppCompat.ActionBar.Solid">
+        <item name="android:background">@color/primary</item>
+        <item name="background">@color/primary</item>
+        <item name="titleTextStyle">@style/BlueActionBarText</item>
+        <item name="android:icon">@mipmap/ic_launcher</item>
+        <item name="icon">@mipmap/ic_launcher</item>
+    </style>
+
+    <style name="BlueActionBarText" parent="@style/TextAppearance.AppCompat.Widget.ActionBar.Title">
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+
+</resources>

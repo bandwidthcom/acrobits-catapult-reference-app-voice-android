@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:focusable="false">
+        <EditText
+            android:id="@+id/editTextNumber"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="75dp"
+            android:layout_marginStart="60dp"
+            android:textSize="30sp"
+            android:textAlignment="center"
+            android:clickable="true"
+            android:inputType="phone|number"
+            android:singleLine="true"
+            android:textIsSelectable="true"
+            android:cursorVisible="false"
+            android:text=""
+            android:textColor="@color/text_dark"
+            android:background="@color/transparent"
+            android:gravity="center"/>
+        <ImageButton
+            android:id="@+id/buttonBackspace"
+            android:layout_width="60dp"
+            android:layout_height="75dp"
+            android:layout_gravity="end"
+            android:background="@drawable/dialer_button"
+            android:textColor="@drawable/dialer_button_text"
+            android:src="@drawable/backspace"/>
+    </LinearLayout>
+
+
+    <include layout="@layout/fragment_dialpad"/>
+
+
+    <Button
+        android:id="@+id/buttonCall"
+        android:text="@string/call"
+        android:layout_width="match_parent"
+        android:layout_height="75dp"
+        android:background="@drawable/blue_button"
+        android:textColor="@color/text_primary"
+        />
+
+
+</LinearLayout>
