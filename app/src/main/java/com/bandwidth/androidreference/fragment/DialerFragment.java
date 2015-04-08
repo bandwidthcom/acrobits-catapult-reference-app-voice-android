@@ -1,6 +1,8 @@
 package com.bandwidth.androidreference.fragment;
 
+import android.content.Context;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,6 +15,8 @@ import android.widget.RelativeLayout;
 import com.bandwidth.androidreference.CallService;
 import com.bandwidth.androidreference.MainActivity;
 import com.bandwidth.androidreference.R;
+import com.bandwidth.androidreference.utils.NumberUtils;
+import com.bandwidth.bwsip.BWCall;
 import com.bandwidth.bwsip.BWTone;
 
 
@@ -20,6 +24,9 @@ public class DialerFragment extends Fragment {
 
     private MainActivity mainActivity;
     private CallService callService;
+
+
+    private PowerManager.WakeLock wl;
 
     private RelativeLayout button0;
     private RelativeLayout button1;
@@ -37,11 +44,14 @@ public class DialerFragment extends Fragment {
     private EditText editTextNumber;
     private Button buttonCall;
 
-    private boolean callActive = false;
+    private BWCall activeCall;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mainActivity = (MainActivity) this.getActivity();
+        PowerManager pm = (PowerManager) mainActivity.getSystemService(Context.POWER_SERVICE);
+        wl = pm.newWakeLock(PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK, "tag");
+        wl.setReferenceCounted(false);
 
         View rootView = inflater.inflate(R.layout.fragment_dialer, container, false);
 
@@ -75,7 +85,6 @@ public class DialerFragment extends Fragment {
         buttonStar.setOnClickListener(dialerButtonClickListener);
         buttonPound.setOnClickListener(dialerButtonClickListener);
         buttonBackspace.setOnClickListener(buttonBackspaceClickListener);
-        editTextNumber.setOnFocusChangeListener(numberFocusChangeListener);
         buttonCall.setOnClickListener(buttonCallClickListener);
 
         callService = CallService.getInstance(mainActivity);
@@ -85,18 +94,29 @@ public class DialerFragment extends Fragment {
         return rootView;
     }
 
-    View.OnFocusChangeListener numberFocusChangeListener = new View.OnFocusChangeListener() {
-        @Override
-        public void onFocusChange(View v, boolean hasFocus) {
-            editTextNumber.setCursorVisible(hasFocus);
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (activeCall != null) {
+            callStarted();
         }
-    };
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (wl.isHeld()) {
+            wl.release();
+        }
+    }
 
     View.OnClickListener dialerButtonClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            editTextNumber.getText().append(v.getTag().toString());
-            BWTone.playDigit(v.getTag().toString());
+            editTextNumber.setText(NumberUtils.getPrettyPhoneNumber(editTextNumber.getText() + v.getTag().toString()));
+            if (activeCall!= null) {
+                BWTone.playDigit(v.getTag().toString());
+            }
             buttonCall.requestFocus();
         }
     };
@@ -104,14 +124,9 @@ public class DialerFragment extends Fragment {
     View.OnClickListener buttonBackspaceClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            String currentText = editTextNumber.getText().toString();
-            if (!currentText.equals("")) {
-                if (editTextNumber.getSelectionEnd() > editTextNumber.getSelectionStart()) {
-                    editTextNumber.getText().delete(editTextNumber.getSelectionStart(), editTextNumber.getSelectionEnd());
-                }
-                else if (editTextNumber.getSelectionStart() >= 1) {
-                    editTextNumber.getText().delete(editTextNumber.getSelectionStart() - 1, editTextNumber.getSelectionStart());
-                }
+            if (editTextNumber.getText().toString().length() > 0) {
+                String number = NumberUtils.removeExtraCharacters(editTextNumber.getText().toString());
+                editTextNumber.setText(NumberUtils.getPrettyPhoneNumber(number.substring(0, number.length() - 1)));
             }
         }
     };
@@ -119,29 +134,45 @@ public class DialerFragment extends Fragment {
     View.OnClickListener buttonCallClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            if (callActive) {
-                endCall();
+            if (activeCall != null) {
+                callService.endCall();
+                callEnded();
             }
             else {
-                makeCall();
+                activeCall = callService.makeCall(editTextNumber.getText().toString());
+                callStarted();
             }
         }
     };
 
-    private void makeCall() {
-        callActive = true;
-        callService.makeCall(editTextNumber.getText().toString());
+    public void callStarted() {
+        if (!wl.isHeld()) {
+            wl.acquire();
+        }
         buttonBackspace.setVisibility(View.INVISIBLE);
         buttonCall.setBackgroundResource(R.drawable.contrast_button);
         buttonCall.setText(getResources().getString(R.string.end_call));
+        if (activeCall != null && editTextNumber.getText().length() == 0) {
+            String callerNumber = activeCall.getRemoteUri();
+            callerNumber = NumberUtils.fromSipUri(callerNumber);
+            editTextNumber.setText(callerNumber);
+        }
     }
 
-    private void endCall() {
-        callActive = false;
-        callService.endCall();
+    public void callEnded() {
+        wl.release();
         buttonBackspace.setVisibility(View.VISIBLE);
         buttonCall.setBackgroundResource(R.drawable.blue_button);
         buttonCall.setText(getResources().getString(R.string.call));
+        editTextNumber.getText().clear();
+    }
+
+    public void setActiveCall(BWCall call) {
+        activeCall = call;
+    }
+
+    public void setNumberText(String text) {
+        editTextNumber.setText(text);
     }
 
 }

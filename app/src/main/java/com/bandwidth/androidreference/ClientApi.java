@@ -13,7 +13,7 @@ import org.apache.http.util.EntityUtils;
 
 public class ClientApi {
 
-    public static final String APPLICATION_SERVER_URL = "https://YOUR_APPLICATION_SERVER_URL_GOES_HERE";
+    public static final String APPLICATION_SERVER_URL = "https://enigmatic-sea-2283.herokuapp.com";
 
     public static User getUser(String username, String password) {
         User user = null;
@@ -23,7 +23,6 @@ public class ClientApi {
             HttpClient client = new DefaultHttpClient();
             HttpPost post = new HttpPost(APPLICATION_SERVER_URL + "/users");
             StringEntity requestBody = new StringEntity(gson.toJson(login));
-            //body.setContentType("application/json");
             post.setEntity(requestBody);
             HttpResponse response = client.execute(post);
             String responseBody = EntityUtils.toString(response.getEntity());

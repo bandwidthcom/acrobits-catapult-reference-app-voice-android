@@ -7,6 +7,9 @@
     <string name="ok">OK</string>
     <string name="call">Call</string>
     <string name="end_call">End Call</string>
+    <string name="incoming_call">Incoming call</string>
+    <string name="answer">Answer</string>
+    <string name="decline">Decline</string>
     <string name="phone_number">Phone number</string>
     <string name="registrar">Registrar</string>
     <string name="app_server">Application server</string>

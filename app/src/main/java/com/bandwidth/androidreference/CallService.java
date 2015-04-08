@@ -1,9 +1,6 @@
 package com.bandwidth.androidreference;
 
-import android.app.AlertDialog;
-import android.content.Context;
-
-import com.bandwidth.androidreference.data.User;
+import com.bandwidth.androidreference.fragment.IncomingCallFragment;
 import com.bandwidth.bwsip.BWAccount;
 import com.bandwidth.bwsip.BWCall;
 import com.bandwidth.bwsip.BWPhone;
@@ -18,18 +15,18 @@ public class CallService implements BWCallDelegate, BWAccountDelegate {
     private BWPhone phone;
     private BWAccount account;
     private static CallService instance;
-    private static Context context;
+    private static MainActivity mainActivity;
     private static BWCall currentCall;
 
-    public static CallService getInstance(Context context) {
+    public static CallService getInstance(MainActivity mainActivity) {
         if (instance == null) {
-            instance = new CallService(context);
+            instance = new CallService(mainActivity);
         }
         return instance;
     }
 
-    private CallService(Context context) {
-        this.context = context;
+    private CallService(MainActivity mainActivity) {
+        this.mainActivity = mainActivity;
         phone = BWPhone.getInstance();
         phone.setTransportType(BWTransport.UDP);
         phone.setLogLevel(9);
@@ -54,9 +51,17 @@ public class CallService implements BWCallDelegate, BWAccountDelegate {
 
     @Override
     public void onIncomingCall(BWCall bwCall) {
+        bwCall.setDelegate(this);
         bwCall.answerCall(BWSipResponse.RINGING);
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setMessage("Ring, ring, ring...").create().show();
+        currentCall = bwCall;
+        mainActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                IncomingCallFragment incomingCallFragment = new IncomingCallFragment();
+                incomingCallFragment.setCall(currentCall);
+                mainActivity.goToFragment(incomingCallFragment, true);
+            }
+        });
     }
 
     private void registerUser() {
@@ -68,15 +73,15 @@ public class CallService implements BWCallDelegate, BWAccountDelegate {
         account.setIceEnabled(true);
 
         // Specifying the SIP registrar
-        account.setRegistrar(SaveManager.getRealm(context));
+        account.setRegistrar(SaveManager.getRealm(mainActivity));
 
         // Setting the username and password
-        account.setCredentials(SaveManager.getCredUsername(context), SaveManager.getPassword(context));
+        account.setCredentials(SaveManager.getCredUsername(mainActivity), SaveManager.getPassword(mainActivity));
         account.connect();
     }
 
     public BWCall makeCall(String number) {
-        String registrar = SaveManager.getRealm(context);
+        String registrar = SaveManager.getRealm(mainActivity);
         currentCall = new BWCall(account);
         currentCall.setDelegate(this);
         currentCall.setRemoteUri(number + "@" + registrar);
@@ -84,8 +89,22 @@ public class CallService implements BWCallDelegate, BWAccountDelegate {
         return currentCall;
     }
 
+    public void answerIncomingCall() {
+        currentCall.answerCall(BWSipResponse.OK);
+    }
+
+    public void declineIncomingCall() {
+        currentCall.answerCall(BWSipResponse.DECLINE);
+        endCall();
+    }
+
     public void endCall() {
         currentCall.hangupCall();
         currentCall.close();
+        currentCall = null;
+    }
+
+    public BWCall getCurrentCall() {
+        return currentCall;
     }
 }

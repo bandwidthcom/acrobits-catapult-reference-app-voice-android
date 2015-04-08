@@ -16,13 +16,16 @@ import android.view.inputmethod.InputMethodManager;
 
 import com.bandwidth.androidreference.fragment.AccountInfoFragment;
 import com.bandwidth.androidreference.fragment.DialerFragment;
+import com.bandwidth.androidreference.fragment.IncomingCallFragment;
 import com.bandwidth.androidreference.fragment.RegisterFragment;
+import com.bandwidth.bwsip.BWCall;
 
 public class MainActivity extends ActionBarActivity implements FragmentManager.OnBackStackChangedListener {
 
     private MainActivity mainActivity;
     private Menu menu;
     private boolean menuVisible = false;
+    private DialerFragment dialerFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,8 +50,9 @@ public class MainActivity extends ActionBarActivity implements FragmentManager.O
             }
             else {
                 if (SaveManager.getUser(this) != null) {
+                    dialerFragment = new DialerFragment();
                     getSupportFragmentManager().beginTransaction()
-                            .add(R.id.container, new DialerFragment())
+                            .add(R.id.container, dialerFragment)
                             .commit();
                 }
                 else {
@@ -134,6 +138,10 @@ public class MainActivity extends ActionBarActivity implements FragmentManager.O
         if (menu != null) {
             menu.setGroupVisible(R.id.menuItems, visible);
         }
+    }
+
+    public DialerFragment getDialerFragment() {
+        return dialerFragment;
     }
 
     private void showAccountInfo() {
