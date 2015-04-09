@@ -72,7 +72,7 @@ public class RegisterFragment extends Fragment {
             AsyncTask<String, Void, User> getUserAsync = new AsyncTask<String, Void, User>() {
                 @Override
                 protected User doInBackground(String... params) {
-                    return ClientApi.getUser(params[0], params[1]);
+                    return ClientApi.getUser(mainActivity, params[0], params[1]);
                 }
 
                 @Override

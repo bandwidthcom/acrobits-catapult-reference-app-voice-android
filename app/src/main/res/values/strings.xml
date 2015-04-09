@@ -1,4 +1,8 @@
 <resources>
+
+    <!-- Before running this application, change the variable below to point to your application server -->
+    <string name="application_server_url">https://YOUR_APPLICATION_SERVER_URL_GOES_HERE</string>
+
     <string name="app_name">Bandwidth Phone</string>
     <string name="username">Username</string>
     <string name="register">Register</string>
@@ -10,16 +14,20 @@
     <string name="incoming_call">Incoming call</string>
     <string name="answer">Answer</string>
     <string name="decline">Decline</string>
-    <string name="phone_number">Phone number</string>
-    <string name="registrar">Registrar</string>
-    <string name="app_server">Application server</string>
     <string name="action_sign_out">Sign out&#8230;</string>
     <string name="sign_out">Sign out</string>
     <string name="cancel">Cancel</string>
     <string name="dialog_title_sign_out">Are you sure?</string>
     <string name="dialog_message_sign_out">You won\'t be able to use this same number over again. Do you really want to sign out?</string>
     <string name="action_account_info">Account info</string>
+    <string name="phone_number">Phone number</string>
+    <string name="endpoint_name">Endpoint name</string>
+    <string name="registrar">Registrar</string>
+    <string name="sip_uri">SIP URI</string>
+    <string name="app_server">Application server</string>
     <string name="preference_file_key">com.bandwidth.androidreference.PREFERENCE_FILE_KEY</string>
     <string name="dialog_readme_title">One more step&#8230;</string>
     <string name="dialog_readme_message">You need to set your application server URL in the ClientApi.java file before running this app. Please read the README.md for more details.</string>
+    <string name="toast_registration_error">Error during SIP registration: %1$s</string>
+    <string name="toast_call_ended_message">Call ended</string>
 </resources>

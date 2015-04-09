@@ -35,7 +35,7 @@ public class MainActivity extends ActionBarActivity implements FragmentManager.O
         getSupportFragmentManager().addOnBackStackChangedListener(this);
         if (savedInstanceState == null) {
 
-            if (ClientApi.APPLICATION_SERVER_URL.equals("https://YOUR_APPLICATION_SERVER_URL_GOES_HERE")) {
+            if (getResources().getString(R.string.application_server_url).equals("https://YOUR_APPLICATION_SERVER_URL_GOES_HERE")) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setTitle(getResources().getString(R.string.dialog_readme_title))
                         .setMessage(getResources().getString(R.string.dialog_readme_message))

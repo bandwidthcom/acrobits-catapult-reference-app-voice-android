@@ -1,10 +1,14 @@
 package com.bandwidth.androidreference;
 
+import android.widget.Toast;
+
 import com.bandwidth.androidreference.fragment.IncomingCallFragment;
+import com.bandwidth.androidreference.utils.NumberUtils;
 import com.bandwidth.bwsip.BWAccount;
 import com.bandwidth.bwsip.BWCall;
 import com.bandwidth.bwsip.BWPhone;
 import com.bandwidth.bwsip.BWTone;
+import com.bandwidth.bwsip.constants.BWCallState;
 import com.bandwidth.bwsip.constants.BWSipResponse;
 import com.bandwidth.bwsip.constants.BWTransport;
 import com.bandwidth.bwsip.delegates.BWAccountDelegate;
@@ -14,9 +18,11 @@ public class CallService implements BWCallDelegate, BWAccountDelegate {
 
     private BWPhone phone;
     private BWAccount account;
+    private BWCall currentCall;
+    private MainActivity mainActivity;
+    private boolean isRegistered = false;
+
     private static CallService instance;
-    private static MainActivity mainActivity;
-    private static BWCall currentCall;
 
     public static CallService getInstance(MainActivity mainActivity) {
         if (instance == null) {
@@ -36,7 +42,14 @@ public class CallService implements BWCallDelegate, BWAccountDelegate {
 
     @Override
     public void onCallStateChanged(BWCall bwCall) {
-
+        if (bwCall.getLastState().equals(BWCallState.DISCONNECTED)) {
+            mainActivity.runOnUiThread(new Runnable() {
+               @Override
+               public void run() {
+                   mainActivity.getDialerFragment().callEnded();
+               }
+            });
+        }
     }
 
     @Override
@@ -45,8 +58,26 @@ public class CallService implements BWCallDelegate, BWAccountDelegate {
     }
 
     @Override
-    public void onRegStateChanged(BWAccount bwAccount) {
-
+    public void onRegStateChanged(final BWAccount bwAccount) {
+        if (bwAccount.getLastState().equals(BWSipResponse.OK)) {
+            isRegistered = true;
+            mainActivity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mainActivity.getDialerFragment().setCallButtonEnabled(true);
+                }
+            });
+        }
+        else {
+            isRegistered = false;
+            mainActivity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mainActivity.getDialerFragment().setCallButtonEnabled(false);
+                    Toast.makeText(mainActivity, mainActivity.getResources().getString(R.string.toast_registration_error, bwAccount.getLastState().toString()), Toast.LENGTH_LONG).show();
+                }
+            });
+        }
     }
 
     @Override
@@ -81,10 +112,14 @@ public class CallService implements BWCallDelegate, BWAccountDelegate {
     }
 
     public BWCall makeCall(String number) {
+        String tn = NumberUtils.removeExtraCharacters(number);
+        if (tn.charAt(0) != '1') {
+            tn = "1" + tn;
+        }
         String registrar = SaveManager.getRealm(mainActivity);
         currentCall = new BWCall(account);
         currentCall.setDelegate(this);
-        currentCall.setRemoteUri(number + "@" + registrar);
+        currentCall.setRemoteUri(tn + "@" + registrar);
         currentCall.makeCall();
         return currentCall;
     }
@@ -106,5 +141,9 @@ public class CallService implements BWCallDelegate, BWAccountDelegate {
 
     public BWCall getCurrentCall() {
         return currentCall;
+    }
+
+    public boolean isRegistered() {
+        return isRegistered;
     }
 }

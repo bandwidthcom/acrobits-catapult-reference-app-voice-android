@@ -116,8 +116,9 @@ public class DialerFragment extends Fragment {
             editTextNumber.setText(NumberUtils.getPrettyPhoneNumber(editTextNumber.getText() + v.getTag().toString()));
             if (activeCall!= null) {
                 BWTone.playDigit(v.getTag().toString());
+                activeCall.dialDTMF(v.getTag().toString());
             }
-            buttonCall.requestFocus();
+            buttonCall.setEnabled(callService.isRegistered());
         }
     };
 
@@ -128,6 +129,7 @@ public class DialerFragment extends Fragment {
                 String number = NumberUtils.removeExtraCharacters(editTextNumber.getText().toString());
                 editTextNumber.setText(NumberUtils.getPrettyPhoneNumber(number.substring(0, number.length() - 1)));
             }
+            buttonCall.setEnabled(editTextNumber.getText().length() > 0 && callService.isRegistered());
         }
     };
 
@@ -152,6 +154,7 @@ public class DialerFragment extends Fragment {
         buttonBackspace.setVisibility(View.INVISIBLE);
         buttonCall.setBackgroundResource(R.drawable.contrast_button);
         buttonCall.setText(getResources().getString(R.string.end_call));
+        buttonCall.setEnabled(true);
         if (activeCall != null && editTextNumber.getText().length() == 0) {
             String callerNumber = activeCall.getRemoteUri();
             callerNumber = NumberUtils.fromSipUri(callerNumber);
@@ -165,10 +168,22 @@ public class DialerFragment extends Fragment {
         buttonCall.setBackgroundResource(R.drawable.blue_button);
         buttonCall.setText(getResources().getString(R.string.call));
         editTextNumber.getText().clear();
+        buttonCall.setEnabled(false);
+        activeCall = null;
     }
 
     public void setActiveCall(BWCall call) {
         activeCall = call;
+    }
+
+    public void setCallButtonEnabled(boolean enabled) {
+        if (enabled && editTextNumber!= null && editTextNumber.getText().length() > 0) {
+            buttonCall.setEnabled(enabled);
+        }
+        if (!enabled) {
+            buttonCall.setEnabled(enabled);
+        }
+
     }
 
     public void setNumberText(String text) {

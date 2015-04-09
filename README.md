@@ -9,8 +9,8 @@ This project is a fully functioning Android app that leverages the BWsip framewo
 Before you get started, there are a few things that you will need to have set up first.
  - [Android Studio](http://developer.android.com/sdk/index.html)
  - [Android SDK set up and configured](http://developer.android.com/sdk/installing/index.html)
- - A device or an emulator to debug the app on (with USB debugging enabled)
- - An account set up on the Bandwidth Application Dashboard
+ - A [device](http://developer.android.com/tools/device.html) or an [emulator](http://developer.android.com/tools/devices/emulator.html) (ARMv7) to debug the app on
+ - An account set up on the [Bandwidth Application Platform](https://catapult.inetwork.com/)
 
 ###Setting up your Bandwidth account
  - [Need to get detailed instructions for this part]
@@ -21,7 +21,7 @@ Before you get started, there are a few things that you will need to have set up
 ##Get the code
 Just grab this repository by running:
 
-    $ git clone https://github.com/bandwidthcom/SOMETHING
+    $ git clone https://github.com/bandwidthcom/catapult-reference-app-voice-android.git
 
 ##Open the project
  - Launch Android Studio
@@ -29,8 +29,8 @@ Just grab this repository by running:
  - Select to the folder created by Git when you checked out the code
 
 ##Replace server URL
- - Open `app/src/main/java/com/bandwidth/androidreference/ClientApi.java`
- - Replace the `APPLICATION_SERVER_URL` variable with the URL of the server you set up in the steps above
+ - Open `app/src/main/res/values/strings.xml`
+ - Replace the value for the `application_server_url` key with the URL of the server you set up in the steps above
  
 > If you do not do this step, you will see an alert dialog when you try to open the app, and the app will not do anything else.
 

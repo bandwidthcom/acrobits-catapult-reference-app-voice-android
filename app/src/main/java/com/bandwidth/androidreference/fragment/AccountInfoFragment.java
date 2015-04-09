@@ -16,29 +16,27 @@ import com.bandwidth.androidreference.data.User;
 
 public class AccountInfoFragment extends Fragment {
 
-    private MainActivity mainActivity;
-    private TextView textViewUsername;
-    private TextView textViewNumber;
-    private TextView textViewRegistrar;
-    private TextView textViewAppServer;
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        mainActivity = (MainActivity) this.getActivity();
+        MainActivity mainActivity = (MainActivity) this.getActivity();
 
         View rootView = inflater.inflate(R.layout.fragment_account_info, container, false);
 
-        textViewUsername = (TextView) rootView.findViewById(R.id.textViewUsername);
-        textViewNumber = (TextView) rootView.findViewById(R.id.textViewNumber);
-        textViewRegistrar = (TextView) rootView.findViewById(R.id.textViewRegistrar);
-        textViewAppServer = (TextView) rootView.findViewById(R.id.textViewAppServer);
+        TextView textViewUsername = (TextView) rootView.findViewById(R.id.textViewUsername);
+        TextView textViewNumber = (TextView) rootView.findViewById(R.id.textViewNumber);
+        TextView textViewEndpointName = (TextView) rootView.findViewById(R.id.textViewEndpointName);
+        TextView textViewRegistrar = (TextView) rootView.findViewById(R.id.textViewRegistrar);
+        TextView textViewSipUri = (TextView) rootView.findViewById(R.id.textViewSipUri);
 
         User user = SaveManager.getUser(mainActivity);
 
         textViewUsername.setText(user.getUsername());
         textViewNumber.setText(user.getNumber());
+        textViewEndpointName.setText(user.getEndpoint().getCredentials().getUsername());
         textViewRegistrar.setText(user.getEndpoint().getCredentials().getRealm());
-        textViewAppServer.setText(ClientApi.APPLICATION_SERVER_URL);
+        textViewSipUri.setText(user.getEndpoint().getSipUri());
 
         mainActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
