@@ -27,10 +27,36 @@
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".activity.IncomingCallActivity"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait">
+        </activity>
+        <activity
+            android:name=".activity.CallActivity"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait">
+        </activity>
+
+        <service
+            android:name="com.bandwidth.androidreference.CallBackgroundService"
+            android:exported="false">
+            <intent-filter android:label="service">
+                <action android:name="com.bandwidth.ringto.CallBackgroundService" />
+            </intent-filter>
+        </service>
+
+        <!-- Start the service on system startup -->
+        <receiver android:name="com.bandwidth.androidreference.intent.Autostart">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <category android:name="android.intent.category.HOME" />
+            </intent-filter>
+        </receiver>
+
     </application>
 
 </manifest>

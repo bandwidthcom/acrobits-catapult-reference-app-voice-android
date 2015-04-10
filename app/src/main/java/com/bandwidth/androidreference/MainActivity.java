@@ -1,8 +1,13 @@
 package com.bandwidth.androidreference;
 
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.ServiceConnection;
+import android.os.IBinder;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -18,6 +23,7 @@ import com.bandwidth.androidreference.fragment.AccountInfoFragment;
 import com.bandwidth.androidreference.fragment.DialerFragment;
 import com.bandwidth.androidreference.fragment.IncomingCallFragment;
 import com.bandwidth.androidreference.fragment.RegisterFragment;
+import com.bandwidth.androidreference.intent.BWSipIntent;
 import com.bandwidth.bwsip.BWCall;
 
 public class MainActivity extends ActionBarActivity implements FragmentManager.OnBackStackChangedListener {
@@ -26,6 +32,34 @@ public class MainActivity extends ActionBarActivity implements FragmentManager.O
     private Menu menu;
     private boolean menuVisible = false;
     private DialerFragment dialerFragment;
+    private CallBackgroundService callService;
+    private Intent intent;
+
+    ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            CallBackgroundService.LocalBinder binder = (CallBackgroundService.LocalBinder) service;
+            callService = binder.getService();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            callService = null;
+        }
+    };
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Intent intent = new Intent(this, CallBackgroundService.class);
+        bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        unbindService(serviceConnection);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +68,8 @@ public class MainActivity extends ActionBarActivity implements FragmentManager.O
         setContentView(R.layout.activity_main);
         getSupportFragmentManager().addOnBackStackChangedListener(this);
         if (savedInstanceState == null) {
+
+            intent = getIntent();
 
             if (getResources().getString(R.string.application_server_url).equals("https://YOUR_APPLICATION_SERVER_URL_GOES_HERE")) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -63,6 +99,17 @@ public class MainActivity extends ActionBarActivity implements FragmentManager.O
             }
         }
     }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        if (intent.getAction().equals(BWSipIntent.INCOMING_CALL)) {
+            IncomingCallFragment incomingCallFragment = new IncomingCallFragment();
+            incomingCallFragment.setFromNumber(intent.getStringExtra(BWSipIntent.INCOMING_CALL));
+            goToFragment(incomingCallFragment, true);
+        }
+    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -140,6 +187,10 @@ public class MainActivity extends ActionBarActivity implements FragmentManager.O
         }
     }
 
+    public CallBackgroundService getCallService() {
+        return callService;
+    }
+
     public DialerFragment getDialerFragment() {
         return dialerFragment;
     }
@@ -162,5 +213,14 @@ public class MainActivity extends ActionBarActivity implements FragmentManager.O
                 .setNegativeButton(getResources().getString(R.string.cancel), null)
                 .create()
                 .show();
+    }
+
+    private class IntentReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(BWSipIntent.INCOMING_CALL)) {
+                mainActivity.goToFragment(mainActivity.getDialerFragment());
+            }
+        }
     }
 }

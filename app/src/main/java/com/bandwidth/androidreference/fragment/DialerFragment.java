@@ -12,7 +12,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 
-import com.bandwidth.androidreference.CallService;
+import com.bandwidth.androidreference.CallBackgroundService;
 import com.bandwidth.androidreference.MainActivity;
 import com.bandwidth.androidreference.R;
 import com.bandwidth.androidreference.utils.NumberUtils;
@@ -23,8 +23,7 @@ import com.bandwidth.bwsip.BWTone;
 public class DialerFragment extends Fragment {
 
     private MainActivity mainActivity;
-    private CallService callService;
-
+    //private CallBackgroundService callService;
 
     private PowerManager.WakeLock wl;
 
@@ -87,7 +86,7 @@ public class DialerFragment extends Fragment {
         buttonBackspace.setOnClickListener(buttonBackspaceClickListener);
         buttonCall.setOnClickListener(buttonCallClickListener);
 
-        callService = CallService.getInstance(mainActivity);
+        //callService = mainActivity.getCallService();
 
         mainActivity.setMenuVisible(true);
 
@@ -118,7 +117,7 @@ public class DialerFragment extends Fragment {
                 BWTone.playDigit(v.getTag().toString());
                 activeCall.dialDTMF(v.getTag().toString());
             }
-            buttonCall.setEnabled(callService.isRegistered());
+            //buttonCall.setEnabled(callService.isRegistered());
         }
     };
 
@@ -129,7 +128,7 @@ public class DialerFragment extends Fragment {
                 String number = NumberUtils.removeExtraCharacters(editTextNumber.getText().toString());
                 editTextNumber.setText(NumberUtils.getPrettyPhoneNumber(number.substring(0, number.length() - 1)));
             }
-            buttonCall.setEnabled(editTextNumber.getText().length() > 0 && callService.isRegistered());
+            //buttonCall.setEnabled(editTextNumber.getText().length() > 0 && callService.isRegistered());
         }
     };
 
@@ -137,11 +136,11 @@ public class DialerFragment extends Fragment {
         @Override
         public void onClick(View v) {
             if (activeCall != null) {
-                callService.endCall();
+                //callService.endCall();
                 callEnded();
             }
             else {
-                activeCall = callService.makeCall(editTextNumber.getText().toString());
+                //activeCall = callService.makeCall(editTextNumber.getText().toString());
                 callStarted();
             }
         }
