@@ -1,12 +1,16 @@
-package com.bandwidth.androidreference;
+package com.bandwidth.androidreference.activity;
 
 import android.app.AlertDialog;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.ServiceConnection;
+import android.os.IBinder;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.view.MenuItemCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 
@@ -14,25 +18,60 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.inputmethod.InputMethodManager;
 
+import com.bandwidth.androidreference.CallService;
+import com.bandwidth.androidreference.R;
+import com.bandwidth.androidreference.utils.SaveManager;
 import com.bandwidth.androidreference.fragment.AccountInfoFragment;
 import com.bandwidth.androidreference.fragment.DialerFragment;
+import com.bandwidth.androidreference.fragment.IncomingCallFragment;
 import com.bandwidth.androidreference.fragment.RegisterFragment;
+import com.bandwidth.androidreference.intent.BWSipIntent;
 
 public class MainActivity extends ActionBarActivity implements FragmentManager.OnBackStackChangedListener {
 
     private MainActivity mainActivity;
+    private DialerFragment dialerFragment;
+    private CallService callService;
     private Menu menu;
-    private boolean menuVisible = false;
+    private LocalBroadcastManager broadcastManager;
+
+    ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            CallService.LocalBinder binder = (CallService.LocalBinder) service;
+            callService = binder.getService();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            callService = null;
+        }
+    };
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Intent intent = new Intent(this, CallService.class);
+        bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        unbindService(serviceConnection);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mainActivity = this;
+        broadcastManager = LocalBroadcastManager.getInstance(this);
         setContentView(R.layout.activity_main);
         getSupportFragmentManager().addOnBackStackChangedListener(this);
         if (savedInstanceState == null) {
 
-            if (ClientApi.APPLICATION_SERVER_URL.equals("https://YOUR_APPLICATION_SERVER_URL_GOES_HERE")) {
+
+            if (getResources().getString(R.string.application_server_url).equals("https://YOUR_APPLICATION_SERVER_URL_GOES_HERE")) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setTitle(getResources().getString(R.string.dialog_readme_title))
                         .setMessage(getResources().getString(R.string.dialog_readme_message))
@@ -47,8 +86,9 @@ public class MainActivity extends ActionBarActivity implements FragmentManager.O
             }
             else {
                 if (SaveManager.getUser(this) != null) {
+                    dialerFragment = new DialerFragment();
                     getSupportFragmentManager().beginTransaction()
-                            .add(R.id.container, new DialerFragment())
+                            .add(R.id.container, dialerFragment)
                             .commit();
                 }
                 else {
@@ -61,12 +101,26 @@ public class MainActivity extends ActionBarActivity implements FragmentManager.O
     }
 
     @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        if (intent.getAction().equals(BWSipIntent.INCOMING_CALL)) {
+            IncomingCallFragment incomingCallFragment = new IncomingCallFragment();
+            incomingCallFragment.setFromNumber(intent.getStringExtra(BWSipIntent.INCOMING_CALL));
+            goToFragment(incomingCallFragment, true);
+        }
+    }
+
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         this.menu = menu;
-        menu.setGroupVisible(R.id.menuItems, menuVisible);
         return true;
+    }
+
+    public void setMenuVisible(boolean visible) {
+        menu.setGroupVisible(R.id.menu_items, visible);
     }
 
     @Override
@@ -100,7 +154,6 @@ public class MainActivity extends ActionBarActivity implements FragmentManager.O
 
     public void goToFragment(Fragment fragment, boolean addToBackStack) {
         setContentView(R.layout.activity_main);
-        setMenuVisible(false);
         if (addToBackStack) {
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.container, fragment)
@@ -129,11 +182,12 @@ public class MainActivity extends ActionBarActivity implements FragmentManager.O
         return true;
     }
 
-    public void setMenuVisible(boolean visible) {
-        menuVisible = visible;
-        if (menu != null) {
-            menu.setGroupVisible(R.id.menuItems, visible);
-        }
+    public CallService getCallService() {
+        return callService;
+    }
+
+    public DialerFragment getDialerFragment() {
+        return dialerFragment;
     }
 
     private void showAccountInfo() {
@@ -148,6 +202,7 @@ public class MainActivity extends ActionBarActivity implements FragmentManager.O
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         SaveManager.removeUser(mainActivity);
+                        broadcastManager.sendBroadcast(new Intent(BWSipIntent.DEREGISTER));
                         goToFragment(new RegisterFragment());
                     }
                 })

@@ -35,9 +35,7 @@
             android:src="@drawable/backspace"/>
     </LinearLayout>
 
-
     <include layout="@layout/fragment_dialpad"/>
-
 
     <Button
         android:id="@+id/buttonCall"
@@ -46,7 +44,7 @@
         android:layout_height="75dp"
         android:background="@drawable/blue_button"
         android:textColor="@color/text_primary"
-        />
+        android:enabled="false"/>
 
 
 </LinearLayout>

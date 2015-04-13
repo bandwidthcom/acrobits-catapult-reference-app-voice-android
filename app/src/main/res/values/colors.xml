@@ -2,8 +2,12 @@
 <resources>
     <color name="primary">#ff33b5e5</color>
     <color name="primary_dark">#ff3399c9</color>
+    <color name="primary_disabled">#643399c9</color>
     <color name="accent">#ff33b5e5</color>
     <color name="accent_dark">#FF3399C9</color>
+    <color name="accent_light">#ff79d2f2</color>
+    <color name="highlight">#55ffffff</color>
+    <color name="shade">#55000000</color>
     <color name="text_primary">#ffffff</color>
     <color name="text_light">#ffffff</color>
     <color name="text_dark">#555555</color>

@@ -1,24 +1,27 @@
 package com.bandwidth.androidreference.data;
 
+import com.google.gson.annotations.SerializedName;
+
 public class Login {
-    private String name;
+    @SerializedName("userName")
+    private String userName;
     private String password;
 
     public Login() {
 
     }
 
-    public Login(String name, String password) {
-        this.name = name;
+    public Login(String userName, String password) {
+        this.userName = userName;
         this.password = password;
     }
 
-    public String getName() {
-        return name;
+    public String getUserName() {
+        return userName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 
     public String getPassword() {

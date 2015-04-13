@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:focusable="false">
+        <TextView
+            android:id="@+id/textViewNumber"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="75dp"
+            android:textSize="30sp"
+            android:textAlignment="center"
+            android:clickable="true"
+            android:inputType="phone|number"
+            android:singleLine="true"
+            android:textIsSelectable="true"
+            android:cursorVisible="false"
+            android:text=""
+            android:textColor="@color/text_dark"
+            android:background="@color/transparent"
+            android:gravity="center"/>
+    </LinearLayout>
+
+    <include layout="@layout/fragment_dialpad"/>
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="10dp">
+
+        <Space
+            android:layout_width="10dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"/>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center">
+
+            <ToggleButton
+                android:id="@+id/buttonMute"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:textOff="@string/mute"
+                android:textOn="@string/mute"/>
+
+            <ToggleButton
+                android:id="@+id/buttonSpeaker"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:textOff="@string/speaker"
+                android:textOn="@string/speaker"/>
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/textViewCallDuration"
+            android:layout_width="10dp"
+            android:layout_height="fill_parent"
+            android:text="00:00"
+            android:textSize="20sp"
+            android:layout_weight="1"
+            android:gravity="center"/>
+
+
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/buttonEndCall"
+        android:text="@string/end_call"
+        android:layout_width="match_parent"
+        android:layout_height="75dp"
+        android:background="@drawable/contrast_button"
+        android:textColor="@color/text_primary"
+        />
+
+
+</LinearLayout>

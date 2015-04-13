@@ -3,64 +3,120 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/username"
-            android:layout_margin="10dp"
-            android:textSize="20sp"
-            android:textStyle="bold"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/username"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginTop="10dp"
+        android:textSize="20sp"
+        android:textStyle="bold"/>
 
-        <TextView
-            android:id="@+id/textViewUsername"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:textSize="20sp"/>
+    <TextView
+        android:id="@+id/textViewUsername"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="10dp"
+        android:textSize="20sp"/>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/phone_number"
-            android:layout_margin="10dp"
-            android:textSize="20sp"
-            android:textStyle="bold"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/phone_number"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginTop="10dp"
+        android:textSize="20sp"
+        android:textStyle="bold"/>
 
-        <TextView
-            android:id="@+id/textViewNumber"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:textSize="20sp"/>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/registrar"
-            android:layout_margin="10dp"
-            android:textSize="20sp"
-            android:textStyle="bold"/>
+    <TextView
+        android:id="@+id/textViewNumber"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="10dp"
+        android:textSize="20sp"/>
 
-        <TextView
-            android:id="@+id/textViewRegistrar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:textSize="20sp"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/endpoint_name"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginTop="10dp"
+        android:textSize="20sp"
+        android:textStyle="bold"/>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/app_server"
-            android:layout_margin="10dp"
-            android:textSize="20sp"
-            android:textStyle="bold"/>
+    <TextView
+        android:id="@+id/textViewEndpointName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="10dp"
+        android:textSize="20sp"/>
 
-        <TextView
-            android:id="@+id/textViewAppServer"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:textSize="20sp"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/registrar"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginTop="10dp"
+        android:textSize="20sp"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:id="@+id/textViewRegistrar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="10dp"
+        android:textSize="20sp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/sip_uri"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginTop="10dp"
+        android:textSize="20sp"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:id="@+id/textViewSipUri"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="10dp"
+        android:textSize="20sp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/app_server"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginTop="10dp"
+        android:textSize="20sp"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:id="@+id/textViewAppServer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="10dp"
+        android:textSize="20sp"
+        android:text="@string/application_server_url"/>
 
 </LinearLayout>

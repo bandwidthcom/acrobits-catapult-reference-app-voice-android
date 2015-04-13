@@ -1,4 +1,4 @@
-package com.bandwidth.androidreference;
+package com.bandwidth.androidreference.data;
 
 public class Credentials {
 
