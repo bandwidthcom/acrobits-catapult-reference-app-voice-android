@@ -18,10 +18,14 @@ public class CallActivity extends ActionBarActivity {
             Intent intent = getIntent();
 
             CallFragment callFragment = new CallFragment();
-            callFragment.setFromNumber(intent.getStringExtra(BWSipIntent.INCOMING_CALL));
+            callFragment.setPhoneNumber(intent.getStringExtra(BWSipIntent.PHONE_CALL));
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.container, callFragment)
                     .commit();
         }
+    }
+
+    @Override
+    public void onBackPressed() {
     }
 }

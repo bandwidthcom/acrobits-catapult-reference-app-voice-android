@@ -7,10 +7,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.bandwidth.androidreference.ClientApi;
-import com.bandwidth.androidreference.MainActivity;
+import com.bandwidth.androidreference.activity.MainActivity;
 import com.bandwidth.androidreference.R;
-import com.bandwidth.androidreference.SaveManager;
+import com.bandwidth.androidreference.utils.SaveManager;
 import com.bandwidth.androidreference.data.User;
 
 
@@ -32,8 +31,8 @@ public class AccountInfoFragment extends Fragment {
 
         User user = SaveManager.getUser(mainActivity);
 
-        textViewUsername.setText(user.getUsername());
-        textViewNumber.setText(user.getNumber());
+        textViewUsername.setText(user.getUserName());
+        textViewNumber.setText(user.getPhoneNumber());
         textViewEndpointName.setText(user.getEndpoint().getCredentials().getUsername());
         textViewRegistrar.setText(user.getEndpoint().getCredentials().getRealm());
         textViewSipUri.setText(user.getEndpoint().getSipUri());

@@ -1,9 +1,11 @@
-package com.bandwidth.androidreference;
+package com.bandwidth.androidreference.utils;
 
 
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.bandwidth.androidreference.R;
+import com.bandwidth.androidreference.data.Credentials;
 import com.bandwidth.androidreference.data.Endpoint;
 import com.bandwidth.androidreference.data.User;
 
@@ -123,8 +125,8 @@ public class SaveManager {
     }
 
     public static void saveUser(Context context, User user) {
-        SaveManager.setUsername(context, user.getUsername());
-        SaveManager.setNumber(context, user.getNumber());
+        SaveManager.setUsername(context, user.getUserName());
+        SaveManager.setNumber(context, user.getPhoneNumber());
         SaveManager.setId(context, user.getEndpoint().getId());
         SaveManager.setDomainId(context, user.getEndpoint().getDomainId());
         SaveManager.setName(context, user.getEndpoint().getName());
@@ -140,8 +142,8 @@ public class SaveManager {
         String username = SaveManager.getUsername(context);
         if (username != null) {
             user = new User();
-            user.setUsername(username);
-            user.setNumber(SaveManager.getNumber(context));
+            user.setUserName(username);
+            user.setPhoneNumber(SaveManager.getNumber(context));
             Credentials credentials = new Credentials();
             credentials.setUsername(SaveManager.getCredUsername(context));
             credentials.setPassword(SaveManager.getPassword(context));

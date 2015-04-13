@@ -13,6 +13,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -24,7 +25,6 @@ import com.bandwidth.androidreference.intent.BWSipIntent;
 public class IncomingCallFragment extends Fragment {
 
     private TextView textViewIncomingNumber;
-    //private CallBackgroundService callService;
     private String callerNumber;
     private Ringtone ringtone;
     Vibrator vibrator;
@@ -49,8 +49,8 @@ public class IncomingCallFragment extends Fragment {
                 vibrator.cancel();
 
                 Intent callIntent = new Intent(activity, CallActivity.class);
-                callIntent.setAction(BWSipIntent.INCOMING_CALL);
-                callIntent.putExtra(BWSipIntent.INCOMING_CALL, textViewIncomingNumber.getText().toString());
+                callIntent.setAction(BWSipIntent.PHONE_CALL);
+                callIntent.putExtra(BWSipIntent.PHONE_CALL, textViewIncomingNumber.getText().toString());
                 activity.startActivity(callIntent);
 
                 Intent answerIntent = new Intent();
@@ -72,6 +72,9 @@ public class IncomingCallFragment extends Fragment {
         });
 
         textViewIncomingNumber = (TextView) rootView.findViewById(R.id.textViewIncomingNumber);
+        if (callerNumber != null) {
+            textViewIncomingNumber.setText(callerNumber);
+        }
 
         AudioManager audioManager = (AudioManager) activity.getSystemService(Context.AUDIO_SERVICE);
         Uri uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
@@ -85,6 +88,23 @@ public class IncomingCallFragment extends Fragment {
         }
 
         return rootView;
+    }
+
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
+        getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+        getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
+        getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+        getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
     public void setFromNumber(String number) {

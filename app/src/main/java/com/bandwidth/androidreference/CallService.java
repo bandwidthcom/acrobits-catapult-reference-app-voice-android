@@ -12,6 +12,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import com.bandwidth.androidreference.activity.IncomingCallActivity;
 import com.bandwidth.androidreference.intent.BWSipIntent;
 import com.bandwidth.androidreference.utils.NumberUtils;
+import com.bandwidth.androidreference.utils.SaveManager;
 import com.bandwidth.bwsip.BWAccount;
 import com.bandwidth.bwsip.BWCall;
 import com.bandwidth.bwsip.BWPhone;
@@ -21,18 +22,21 @@ import com.bandwidth.bwsip.constants.BWTransport;
 import com.bandwidth.bwsip.delegates.BWAccountDelegate;
 import com.bandwidth.bwsip.delegates.BWCallDelegate;
 
-public class CallBackgroundService extends Service implements BWCallDelegate, BWAccountDelegate {
+import java.util.Date;
+
+public class CallService extends Service implements BWCallDelegate, BWAccountDelegate {
 
     private static BWPhone phone;
     private static BWAccount account;
     private static BWCall currentCall;
     private static IntentReceiver intentReceiver;
+    private static long callStartTime;
 
     private final IBinder mBinder = new LocalBinder();
 
     public class LocalBinder extends Binder {
-        public CallBackgroundService getService() {
-            return CallBackgroundService.this;
+        public CallService getService() {
+            return CallService.this;
         }
     }
 
@@ -57,6 +61,14 @@ public class CallBackgroundService extends Service implements BWCallDelegate, BW
             IntentFilter intentFilter = new IntentFilter();
             intentFilter.addAction(BWSipIntent.ANSWER_CALL);
             intentFilter.addAction(BWSipIntent.DECLINE_CALL);
+            intentFilter.addAction(BWSipIntent.END_CALL);
+            intentFilter.addAction(BWSipIntent.MAKE_CALL);
+            intentFilter.addAction(BWSipIntent.MUTE);
+            intentFilter.addAction(BWSipIntent.UNMUTE);
+            intentFilter.addAction(BWSipIntent.SPEAKER);
+            intentFilter.addAction(BWSipIntent.EARPIECE);
+            intentFilter.addAction(BWSipIntent.RENEW_REGISTRATION);
+            intentFilter.addAction(BWSipIntent.DEREGISTER);
             LocalBroadcastManager.getInstance(this).registerReceiver(intentReceiver, intentFilter);
         }
 
@@ -96,43 +108,46 @@ public class CallBackgroundService extends Service implements BWCallDelegate, BW
 
     @Override
     public void onIncomingCall(BWCall bwCall) {
-        bwCall.setDelegate(this);
-        bwCall.answerCall(BWSipResponse.RINGING);
-        currentCall = bwCall;
+        if (currentCall == null) {
+            currentCall = bwCall;
+            bwCall.setDelegate(this);
+            bwCall.answerCall(BWSipResponse.RINGING);
+            callStartTime = new Date().getTime();
 
-        Intent intent = new Intent(getBaseContext(), IncomingCallActivity.class);
-        intent.setAction(BWSipIntent.INCOMING_CALL);
-        intent.putExtra(BWSipIntent.INCOMING_CALL, NumberUtils.fromSipUri(bwCall.getRemoteUri()));
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NO_USER_ACTION);
-        getApplication().startActivity(intent);
+            Intent intent = new Intent(getBaseContext(), IncomingCallActivity.class);
+            intent.setAction(BWSipIntent.INCOMING_CALL);
+            intent.putExtra(BWSipIntent.INCOMING_CALL, NumberUtils.fromSipUri(bwCall.getRemoteUri()));
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NO_USER_ACTION);
+            getApplication().startActivity(intent);
+        }
+        else {
+            bwCall.answerCall(BWSipResponse.BUSY_HERE);
+        }
     }
 
     @Override
     public int onStartCommand(Intent intent, int fvlags, int startId) {
-
-
         return START_STICKY;
     }
 
     private void registerUser() {
-        account = new BWAccount(phone);
+        if (SaveManager.getUsername(getBaseContext()) != null) {
+            account = new BWAccount(phone);
 
-        account.setDelegate(this);
+            account.setDelegate(this);
 
-        // Using ICE to connect to his account
-        account.setIceEnabled(true);
+            account.setIceEnabled(true);
 
-        // Specifying the SIP registrar
-        account.setRegistrar(SaveManager.getRealm(this));
+            account.setRegistrar(SaveManager.getRealm(this));
 
-        // Setting the username and password
-        account.setCredentials(SaveManager.getCredUsername(this), SaveManager.getPassword(this));
-        account.connect();
+            account.setCredentials(SaveManager.getCredUsername(this), SaveManager.getPassword(this));
+            account.connect();
+        }
     }
 
-    public BWCall makeCall(String number) {
+    private BWCall makeCall(String number) {
         String tn = NumberUtils.removeExtraCharacters(number);
         if (tn.charAt(0) != '1') {
             tn = "1" + tn;
@@ -142,22 +157,23 @@ public class CallBackgroundService extends Service implements BWCallDelegate, BW
         currentCall.setDelegate(this);
         currentCall.setRemoteUri(tn + "@" + registrar);
         currentCall.makeCall();
+        callStartTime = new Date().getTime();
         return currentCall;
     }
 
-    public void answerIncomingCall() {
-        currentCall.answerCall(BWSipResponse.OK);
+    private void answerIncomingCall() {
         phone.setAudioOutputRoute(getBaseContext(), BWOutputRoute.EARPIECE);
+        currentCall.answerCall(BWSipResponse.OK);
     }
 
-    public void declineIncomingCall() {
+    private void declineIncomingCall() {
         if (currentCall != null) {
             currentCall.answerCall(BWSipResponse.DECLINE);
             endCall();
         }
     }
 
-    public void endCall() {
+    private void endCall() {
         if (currentCall != null) {
             currentCall.hangupCall();
             currentCall.close();
@@ -165,8 +181,30 @@ public class CallBackgroundService extends Service implements BWCallDelegate, BW
         }
     }
 
-    public BWCall getCurrentCall() {
-        return currentCall;
+    public static long getCallStartTime() {
+        return callStartTime;
+    }
+
+    public static void dialDTMF(String digits) {
+        if (currentCall != null) {
+            currentCall.dialDTMF(digits);
+        }
+    }
+
+    private void renewRegistration() {
+        if (account != null) {
+            account.updateRegistration(true);
+        }
+        else {
+            registerUser();
+        }
+    }
+
+    private void deregister() {
+        if (account != null) {
+            account.close();
+            account = null;
+        }
     }
 
     private class IntentReceiver extends BroadcastReceiver
@@ -180,6 +218,27 @@ public class CallBackgroundService extends Service implements BWCallDelegate, BW
             }
             else if (intent.getAction().equals(BWSipIntent.END_CALL)) {
                 endCall();
+            }
+            else if (intent.getAction().equals(BWSipIntent.MAKE_CALL)) {
+                makeCall(intent.getStringExtra(BWSipIntent.MAKE_CALL));
+            }
+            else if (intent.getAction().equals(BWSipIntent.MUTE)) {
+                currentCall.setMute(true);
+            }
+            else if (intent.getAction().equals(BWSipIntent.UNMUTE)) {
+                currentCall.setMute(false);
+            }
+            else if (intent.getAction().equals(BWSipIntent.SPEAKER)) {
+                phone.setAudioOutputRoute(getBaseContext(), BWOutputRoute.LOUDSPEAKER);
+            }
+            else if (intent.getAction().equals(BWSipIntent.EARPIECE)) {
+                phone.setAudioOutputRoute(getBaseContext(), BWOutputRoute.EARPIECE);
+            }
+            else if (intent.getAction().equals(BWSipIntent.RENEW_REGISTRATION)) {
+                renewRegistration();
+            }
+            else if (intent.getAction().equals(BWSipIntent.DEREGISTER)) {
+                deregister();
             }
         }
     }

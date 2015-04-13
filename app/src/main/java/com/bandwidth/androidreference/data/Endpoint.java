@@ -1,7 +1,5 @@
 package com.bandwidth.androidreference.data;
 
-import com.bandwidth.androidreference.Credentials;
-
 public class Endpoint {
     private String id;
     private boolean enabled;

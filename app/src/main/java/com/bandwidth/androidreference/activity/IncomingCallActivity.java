@@ -3,6 +3,7 @@ package com.bandwidth.androidreference.activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.view.WindowManager;
 
 import com.bandwidth.androidreference.R;
 import com.bandwidth.androidreference.fragment.IncomingCallFragment;
@@ -24,5 +25,9 @@ public class IncomingCallActivity extends ActionBarActivity {
                     .add(R.id.container, incomingCallFragment)
                     .commit();
         }
+    }
+
+    @Override
+    public void onBackPressed() {
     }
 }

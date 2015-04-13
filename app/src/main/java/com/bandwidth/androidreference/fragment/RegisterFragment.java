@@ -1,9 +1,11 @@
 package com.bandwidth.androidreference.fragment;
 
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,27 +17,28 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.bandwidth.androidreference.ClientApi;
-import com.bandwidth.androidreference.MainActivity;
+import com.bandwidth.androidreference.data.ClientApi;
+import com.bandwidth.androidreference.activity.MainActivity;
 import com.bandwidth.androidreference.R;
-import com.bandwidth.androidreference.SaveManager;
+import com.bandwidth.androidreference.utils.SaveManager;
 import com.bandwidth.androidreference.data.User;
+import com.bandwidth.androidreference.intent.BWSipIntent;
 
 
 public class RegisterFragment extends Fragment {
 
-    private MainActivity mainActivity;
     private EditText editTextUsername;
     private Button buttonRegister;
     private ProgressBar progressBarRegister;
+    private LocalBroadcastManager broadcastManager;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        mainActivity = (MainActivity) this.getActivity();
-
         View rootView = inflater.inflate(R.layout.fragment_register, container, false);
+
+        broadcastManager = LocalBroadcastManager.getInstance(getActivity());
 
         editTextUsername = (EditText) rootView.findViewById(R.id.editTextUsername);
         editTextUsername.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -55,6 +58,8 @@ public class RegisterFragment extends Fragment {
 
         progressBarRegister = (ProgressBar) rootView.findViewById(R.id.progressBarRegister);
 
+        ((MainActivity) getActivity()).setMenuVisible(false);
+
         return rootView;
     }
 
@@ -64,7 +69,7 @@ public class RegisterFragment extends Fragment {
 
             buttonRegister.setVisibility(View.GONE);
             progressBarRegister.setVisibility(View.VISIBLE);
-            mainActivity.hideKeyboard();
+            ((MainActivity) getActivity()).hideKeyboard();
 
             final String username = editTextUsername.getText().toString();
             final String password = "somemadeuppassword";
@@ -72,21 +77,23 @@ public class RegisterFragment extends Fragment {
             AsyncTask<String, Void, User> getUserAsync = new AsyncTask<String, Void, User>() {
                 @Override
                 protected User doInBackground(String... params) {
-                    return ClientApi.getUser(mainActivity, params[0], params[1]);
+                    return ClientApi.getUser(getActivity(), params[0], params[1]);
                 }
 
                 @Override
                 protected void onPostExecute(User user) {
                     if (user != null) {
                         user.getEndpoint().getCredentials().setPassword(password);
-                        SaveManager.saveUser(mainActivity, user);
-                        mainActivity.goToFragment(new DialerFragment());
-                        Toast.makeText(mainActivity, getResources().getString(R.string.toast_register_message, user.getNumber()), Toast.LENGTH_LONG).show();
+                        SaveManager.saveUser(getActivity(), user);
+                        broadcastManager.sendBroadcast(new Intent(BWSipIntent.RENEW_REGISTRATION));
+                        ((MainActivity)getActivity()).goToFragment(new DialerFragment());
+                        ((MainActivity) getActivity()).setMenuVisible(true);
+                        Toast.makeText(getActivity(), getResources().getString(R.string.toast_register_message, user.getPhoneNumber()), Toast.LENGTH_LONG).show();
                     }
                     else {
                         progressBarRegister.setVisibility(View.GONE);
                         buttonRegister.setVisibility(View.VISIBLE);
-                        Toast.makeText(mainActivity, getResources().getString(R.string.toast_register_error), Toast.LENGTH_LONG).show();
+                        Toast.makeText(getActivity(), getResources().getString(R.string.toast_register_error), Toast.LENGTH_LONG).show();
                     }
                 }
             };

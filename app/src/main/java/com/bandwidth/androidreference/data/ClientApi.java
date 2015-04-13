@@ -1,7 +1,8 @@
-package com.bandwidth.androidreference;
+package com.bandwidth.androidreference.data;
 
 import android.content.Context;
 
+import com.bandwidth.androidreference.R;
 import com.bandwidth.androidreference.data.Login;
 import com.bandwidth.androidreference.data.User;
 import com.google.gson.Gson;
@@ -24,6 +25,7 @@ public class ClientApi {
             String serverUrl = context.getResources().getString(R.string.application_server_url);
             HttpPost post = new HttpPost(serverUrl + "/users");
             StringEntity requestBody = new StringEntity(gson.toJson(login));
+            requestBody.setContentType("application/json");
             post.setEntity(requestBody);
             HttpResponse response = client.execute(post);
             String responseBody = EntityUtils.toString(response.getEntity());

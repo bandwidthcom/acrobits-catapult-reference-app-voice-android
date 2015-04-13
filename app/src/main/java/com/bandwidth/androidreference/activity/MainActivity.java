@@ -1,7 +1,6 @@
-package com.bandwidth.androidreference;
+package com.bandwidth.androidreference.activity;
 
 import android.app.AlertDialog;
-import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -11,7 +10,7 @@ import android.os.IBinder;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.view.MenuItemCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 
@@ -19,26 +18,27 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.inputmethod.InputMethodManager;
 
+import com.bandwidth.androidreference.CallService;
+import com.bandwidth.androidreference.R;
+import com.bandwidth.androidreference.utils.SaveManager;
 import com.bandwidth.androidreference.fragment.AccountInfoFragment;
 import com.bandwidth.androidreference.fragment.DialerFragment;
 import com.bandwidth.androidreference.fragment.IncomingCallFragment;
 import com.bandwidth.androidreference.fragment.RegisterFragment;
 import com.bandwidth.androidreference.intent.BWSipIntent;
-import com.bandwidth.bwsip.BWCall;
 
 public class MainActivity extends ActionBarActivity implements FragmentManager.OnBackStackChangedListener {
 
     private MainActivity mainActivity;
-    private Menu menu;
-    private boolean menuVisible = false;
     private DialerFragment dialerFragment;
-    private CallBackgroundService callService;
-    private Intent intent;
+    private CallService callService;
+    private Menu menu;
+    private LocalBroadcastManager broadcastManager;
 
     ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            CallBackgroundService.LocalBinder binder = (CallBackgroundService.LocalBinder) service;
+            CallService.LocalBinder binder = (CallService.LocalBinder) service;
             callService = binder.getService();
         }
 
@@ -51,7 +51,7 @@ public class MainActivity extends ActionBarActivity implements FragmentManager.O
     @Override
     protected void onStart() {
         super.onStart();
-        Intent intent = new Intent(this, CallBackgroundService.class);
+        Intent intent = new Intent(this, CallService.class);
         bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
     }
 
@@ -65,11 +65,11 @@ public class MainActivity extends ActionBarActivity implements FragmentManager.O
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mainActivity = this;
+        broadcastManager = LocalBroadcastManager.getInstance(this);
         setContentView(R.layout.activity_main);
         getSupportFragmentManager().addOnBackStackChangedListener(this);
         if (savedInstanceState == null) {
 
-            intent = getIntent();
 
             if (getResources().getString(R.string.application_server_url).equals("https://YOUR_APPLICATION_SERVER_URL_GOES_HERE")) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -116,8 +116,11 @@ public class MainActivity extends ActionBarActivity implements FragmentManager.O
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         this.menu = menu;
-        menu.setGroupVisible(R.id.menuItems, menuVisible);
         return true;
+    }
+
+    public void setMenuVisible(boolean visible) {
+        menu.setGroupVisible(R.id.menu_items, visible);
     }
 
     @Override
@@ -151,7 +154,6 @@ public class MainActivity extends ActionBarActivity implements FragmentManager.O
 
     public void goToFragment(Fragment fragment, boolean addToBackStack) {
         setContentView(R.layout.activity_main);
-        setMenuVisible(false);
         if (addToBackStack) {
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.container, fragment)
@@ -180,14 +182,7 @@ public class MainActivity extends ActionBarActivity implements FragmentManager.O
         return true;
     }
 
-    public void setMenuVisible(boolean visible) {
-        menuVisible = visible;
-        if (menu != null) {
-            menu.setGroupVisible(R.id.menuItems, visible);
-        }
-    }
-
-    public CallBackgroundService getCallService() {
+    public CallService getCallService() {
         return callService;
     }
 
@@ -207,20 +202,12 @@ public class MainActivity extends ActionBarActivity implements FragmentManager.O
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         SaveManager.removeUser(mainActivity);
+                        broadcastManager.sendBroadcast(new Intent(BWSipIntent.DEREGISTER));
                         goToFragment(new RegisterFragment());
                     }
                 })
                 .setNegativeButton(getResources().getString(R.string.cancel), null)
                 .create()
                 .show();
-    }
-
-    private class IntentReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(BWSipIntent.INCOMING_CALL)) {
-                mainActivity.goToFragment(mainActivity.getDialerFragment());
-            }
-        }
     }
 }

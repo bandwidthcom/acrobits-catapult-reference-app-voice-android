@@ -1,29 +1,24 @@
 package com.bandwidth.androidreference.data;
 
-import android.content.Context;
-
-import com.bandwidth.androidreference.Credentials;
-import com.bandwidth.androidreference.SaveManager;
-
 public class User {
-    private String username;
-    private String number;
+    private String userName;
+    private String phoneNumber;
     private Endpoint endpoint;
 
-    public String getUsername() {
-        return username;
+    public String getUserName() {
+        return userName;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 
-    public String getNumber() {
-        return number;
+    public String getPhoneNumber() {
+        return phoneNumber;
     }
 
-    public void setNumber(String number) {
-        this.number = number;
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
 
     public Endpoint getEndpoint() {
