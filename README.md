@@ -42,5 +42,3 @@ Just grab this repository by running:
   - You can also see your phone number from the Account info menu item
  - You can now receive phone calls at this phone number
  - You can also dial a phone number and tap Call to place a call
-
-> **Please note**: There is currently no background support so if you close the app or switch to a different app you will not receive incoming calls. If you're currently on a call and you switch to a different app bad things will probably happen.

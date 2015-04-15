@@ -34,13 +34,12 @@ public class IncomingCallFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         final IncomingCallActivity activity = (IncomingCallActivity) this.getActivity();
+        final LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(activity);
 
         View rootView = inflater.inflate(R.layout.fragment_incoming_call, container, false);
 
         Button buttonAnswer = (Button) rootView.findViewById(R.id.button_answer);
         Button buttonDecline = (Button) rootView.findViewById(R.id.button_decline);
-
-        final LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this.getActivity());
 
         buttonAnswer.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -48,16 +47,13 @@ public class IncomingCallFragment extends Fragment {
                 ringtone.stop();
                 vibrator.cancel();
 
-                Intent callIntent = new Intent(activity, CallActivity.class);
-                callIntent.setAction(BWSipIntent.PHONE_CALL);
-                callIntent.putExtra(BWSipIntent.PHONE_CALL, textViewIncomingNumber.getText().toString());
-                activity.startActivity(callIntent);
-
-                Intent answerIntent = new Intent();
-                answerIntent.setAction(BWSipIntent.ANSWER_CALL);
-                broadcastManager.sendBroadcast(answerIntent);
-
+                Intent intent = new Intent(activity, CallActivity.class);
+                intent.setAction(BWSipIntent.PHONE_CALL);
+                intent.putExtra(BWSipIntent.PHONE_CALL, textViewIncomingNumber.getText().toString());
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                activity.startActivity(intent);
                 activity.finish();
+
             }
         });
 
@@ -66,7 +62,12 @@ public class IncomingCallFragment extends Fragment {
             public void onClick(View v) {
                 ringtone.stop();
                 vibrator.cancel();
-                broadcastManager.sendBroadcast(new Intent(BWSipIntent.DECLINE_CALL));
+
+                Intent intent = new Intent(activity, CallActivity.class);
+                intent.setAction(BWSipIntent.DECLINE_CALL);
+                intent.putExtra(BWSipIntent.DECLINE_CALL, textViewIncomingNumber.getText().toString());
+                broadcastManager.sendBroadcast(intent);
+
                 activity.finish();
             }
         });
@@ -87,24 +88,15 @@ public class IncomingCallFragment extends Fragment {
             vibrator.vibrate(vibrationPattern, 0);
         }
 
+        setFlags();
+
         return rootView;
     }
 
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
-        getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
-        getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
-        getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
-        getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    private void setFlags() {
+        this.getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
+        this.getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+        this.getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
     public void setFromNumber(String number) {

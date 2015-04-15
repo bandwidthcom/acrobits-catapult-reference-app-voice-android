@@ -71,11 +71,6 @@ public class DialerFragment extends Fragment {
                 callIntent.putExtra(BWSipIntent.PHONE_CALL, editTextNumber.getText().toString());
                 getActivity().startActivity(callIntent);
 
-                Intent makeCallIntent = new Intent();
-                makeCallIntent.setAction(BWSipIntent.MAKE_CALL);
-                makeCallIntent.putExtra(BWSipIntent.MAKE_CALL, editTextNumber.getText().toString());
-                broadcastManager.sendBroadcast(makeCallIntent);
-
                 editTextNumber.getText().clear();
                 buttonCall.setEnabled(false);
             }

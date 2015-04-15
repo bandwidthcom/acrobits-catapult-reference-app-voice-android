@@ -1,15 +1,23 @@
 package com.bandwidth.androidreference.activity;
 
 import android.app.AlertDialog;
+import android.app.KeyguardManager;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.media.RingtoneManager;
+import android.net.Uri;
+import android.os.Build;
 import android.os.IBinder;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -20,6 +28,8 @@ import android.view.inputmethod.InputMethodManager;
 
 import com.bandwidth.androidreference.CallService;
 import com.bandwidth.androidreference.R;
+import com.bandwidth.androidreference.utils.NotificationHelper;
+import com.bandwidth.androidreference.utils.NumberUtils;
 import com.bandwidth.androidreference.utils.SaveManager;
 import com.bandwidth.androidreference.fragment.AccountInfoFragment;
 import com.bandwidth.androidreference.fragment.DialerFragment;
@@ -27,10 +37,12 @@ import com.bandwidth.androidreference.fragment.IncomingCallFragment;
 import com.bandwidth.androidreference.fragment.RegisterFragment;
 import com.bandwidth.androidreference.intent.BWSipIntent;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 public class MainActivity extends ActionBarActivity implements FragmentManager.OnBackStackChangedListener {
 
     private MainActivity mainActivity;
-    private DialerFragment dialerFragment;
     private CallService callService;
     private Menu menu;
     private LocalBroadcastManager broadcastManager;
@@ -86,7 +98,7 @@ public class MainActivity extends ActionBarActivity implements FragmentManager.O
             }
             else {
                 if (SaveManager.getUser(this) != null) {
-                    dialerFragment = new DialerFragment();
+                    DialerFragment dialerFragment = new DialerFragment();
                     getSupportFragmentManager().beginTransaction()
                             .add(R.id.container, dialerFragment)
                             .commit();
@@ -120,7 +132,9 @@ public class MainActivity extends ActionBarActivity implements FragmentManager.O
     }
 
     public void setMenuVisible(boolean visible) {
-        menu.setGroupVisible(R.id.menu_items, visible);
+        if (menu != null) {
+            menu.setGroupVisible(R.id.menu_items, visible);
+        }
     }
 
     @Override
@@ -142,6 +156,7 @@ public class MainActivity extends ActionBarActivity implements FragmentManager.O
 
         return super.onOptionsItemSelected(item);
     }
+
 
     public void hideKeyboard() {
         InputMethodManager inputManager = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -180,14 +195,6 @@ public class MainActivity extends ActionBarActivity implements FragmentManager.O
     public boolean onSupportNavigateUp() {
         getSupportFragmentManager().popBackStack();
         return true;
-    }
-
-    public CallService getCallService() {
-        return callService;
-    }
-
-    public DialerFragment getDialerFragment() {
-        return dialerFragment;
     }
 
     private void showAccountInfo() {

@@ -33,12 +33,14 @@
         <activity
             android:name=".activity.IncomingCallActivity"
             android:configChanges="orientation"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait"
+            android:allowTaskReparenting="true">
         </activity>
         <activity
             android:name=".activity.CallActivity"
             android:configChanges="orientation"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait"
+            android:allowTaskReparenting="true">
         </activity>
 
         <service

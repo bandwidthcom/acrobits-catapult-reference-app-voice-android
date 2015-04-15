@@ -1,16 +1,19 @@
 package com.bandwidth.androidreference;
 
+import android.app.KeyguardManager;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Binder;
+import android.os.Build;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 
 import com.bandwidth.androidreference.activity.IncomingCallActivity;
 import com.bandwidth.androidreference.intent.BWSipIntent;
+import com.bandwidth.androidreference.utils.NotificationHelper;
 import com.bandwidth.androidreference.utils.NumberUtils;
 import com.bandwidth.androidreference.utils.SaveManager;
 import com.bandwidth.bwsip.BWAccount;
@@ -62,7 +65,7 @@ public class CallService extends Service implements BWCallDelegate, BWAccountDel
             intentFilter.addAction(BWSipIntent.ANSWER_CALL);
             intentFilter.addAction(BWSipIntent.DECLINE_CALL);
             intentFilter.addAction(BWSipIntent.END_CALL);
-            intentFilter.addAction(BWSipIntent.MAKE_CALL);
+            intentFilter.addAction(BWSipIntent.PHONE_CALL);
             intentFilter.addAction(BWSipIntent.MUTE);
             intentFilter.addAction(BWSipIntent.UNMUTE);
             intentFilter.addAction(BWSipIntent.SPEAKER);
@@ -114,13 +117,21 @@ public class CallService extends Service implements BWCallDelegate, BWAccountDel
             bwCall.answerCall(BWSipResponse.RINGING);
             callStartTime = new Date().getTime();
 
-            Intent intent = new Intent(getBaseContext(), IncomingCallActivity.class);
-            intent.setAction(BWSipIntent.INCOMING_CALL);
-            intent.putExtra(BWSipIntent.INCOMING_CALL, NumberUtils.fromSipUri(bwCall.getRemoteUri()));
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NO_USER_ACTION);
-            getApplication().startActivity(intent);
+            KeyguardManager keyguardManager = (KeyguardManager) getBaseContext().getSystemService(Context.KEYGUARD_SERVICE);
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && !keyguardManager.inKeyguardRestrictedInputMode()) {
+                NotificationHelper.placeIncomingCallNotification(getBaseContext(), NumberUtils.fromSipUri(bwCall.getRemoteUri()));
+            }
+            else {
+                Intent intent = new Intent(getBaseContext(), IncomingCallActivity.class);
+                intent.setAction(BWSipIntent.INCOMING_CALL);
+                intent.putExtra(BWSipIntent.INCOMING_CALL, NumberUtils.fromSipUri(bwCall.getRemoteUri()));
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent.addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
+                intent.addFlags(Intent.FLAG_FROM_BACKGROUND);
+                intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+                getApplication().startActivity(intent);
+            }
         }
         else {
             bwCall.answerCall(BWSipResponse.BUSY_HERE);
@@ -219,8 +230,8 @@ public class CallService extends Service implements BWCallDelegate, BWAccountDel
             else if (intent.getAction().equals(BWSipIntent.END_CALL)) {
                 endCall();
             }
-            else if (intent.getAction().equals(BWSipIntent.MAKE_CALL)) {
-                makeCall(intent.getStringExtra(BWSipIntent.MAKE_CALL));
+            else if (intent.getAction().equals(BWSipIntent.PHONE_CALL)) {
+                makeCall(intent.getStringExtra(BWSipIntent.PHONE_CALL));
             }
             else if (intent.getAction().equals(BWSipIntent.MUTE)) {
                 currentCall.setMute(true);

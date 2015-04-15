@@ -6,17 +6,16 @@
         <item name="actionBarStyle">@style/BlueActionBar</item>
     </style>
 
-    <!-- ActionBar style -->
     <style name="BlueActionBar"
         parent="@style/Widget.AppCompat.ActionBar.Solid">
         <item name="android:background">@color/primary</item>
         <item name="background">@color/primary</item>
-        <item name="titleTextStyle">@style/BlueActionBarText</item>
+        <item name="titleTextStyle">@style/ActionBarText</item>
         <item name="android:icon">@mipmap/ic_launcher</item>
         <item name="icon">@mipmap/ic_launcher</item>
     </style>
 
-    <style name="BlueActionBarText" parent="@style/TextAppearance.AppCompat.Widget.ActionBar.Title">
+    <style name="ActionBarText" parent="@style/TextAppearance.AppCompat.Widget.ActionBar.Title">
         <item name="android:textColor">@color/text_primary</item>
     </style>
 
