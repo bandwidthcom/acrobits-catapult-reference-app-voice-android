@@ -29,11 +29,18 @@ import java.util.Date;
 
 public class CallService extends Service implements BWCallDelegate, BWAccountDelegate {
 
+    public enum RegistrationState {
+        NOT_REGISTERED,
+        REGISTERING,
+        REGISTERED
+    }
+
     private static BWPhone phone;
     private static BWAccount account;
     private static BWCall currentCall;
     private static IntentReceiver intentReceiver;
-    private static long callStartTime;
+    private static Long callStartTime;
+    private static RegistrationState registrationState = RegistrationState.NOT_REGISTERED;
 
     private final IBinder mBinder = new LocalBinder();
 
@@ -102,10 +109,20 @@ public class CallService extends Service implements BWCallDelegate, BWAccountDel
 
     @Override
     public void onRegStateChanged(final BWAccount bwAccount) {
+        if (bwAccount.getLastState().equals(BWSipResponse.OK)) {
+            registrationState = RegistrationState.REGISTERED;
+        }
+        else {
+            registrationState = RegistrationState.NOT_REGISTERED;
+        }
+        broadcastRegistrationState();
+    }
+
+    private void broadcastRegistrationState() {
         LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
         Intent intent = new Intent();
         intent.setAction(BWSipIntent.REGISTRATION);
-        intent.putExtra(BWSipIntent.REGISTRATION, bwAccount.getLastState());
+        intent.putExtra(BWSipIntent.REGISTRATION, registrationState);
         broadcastManager.sendBroadcast(intent);
     }
 
@@ -145,14 +162,12 @@ public class CallService extends Service implements BWCallDelegate, BWAccountDel
 
     private void registerUser() {
         if (SaveManager.getUsername(getBaseContext()) != null) {
+            registrationState = RegistrationState.REGISTERING;
+            broadcastRegistrationState();
+
             account = new BWAccount(phone);
-
             account.setDelegate(this);
-
-            account.setIceEnabled(true);
-
             account.setRegistrar(SaveManager.getRealm(this));
-
             account.setCredentials(SaveManager.getCredUsername(this), SaveManager.getPassword(this));
             account.connect();
         }
@@ -192,7 +207,7 @@ public class CallService extends Service implements BWCallDelegate, BWAccountDel
         }
     }
 
-    public static long getCallStartTime() {
+    public static Long getCallStartTime() {
         return callStartTime;
     }
 
@@ -204,6 +219,8 @@ public class CallService extends Service implements BWCallDelegate, BWAccountDel
 
     private void renewRegistration() {
         if (account != null) {
+            registrationState = RegistrationState.REGISTERING;
+            broadcastRegistrationState();
             account.updateRegistration(true);
         }
         else {
@@ -215,7 +232,13 @@ public class CallService extends Service implements BWCallDelegate, BWAccountDel
         if (account != null) {
             account.close();
             account = null;
+            registrationState = RegistrationState.NOT_REGISTERED;
+            broadcastRegistrationState();
         }
+    }
+
+    public static RegistrationState getRegistrationState() {
+        return registrationState;
     }
 
     private class IntentReceiver extends BroadcastReceiver

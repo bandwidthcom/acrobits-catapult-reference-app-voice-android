@@ -1,25 +1,41 @@
 package com.bandwidth.androidreference.fragment;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.bandwidth.androidreference.CallService;
 import com.bandwidth.androidreference.activity.MainActivity;
 import com.bandwidth.androidreference.R;
+import com.bandwidth.androidreference.intent.BWSipIntent;
 import com.bandwidth.androidreference.utils.SaveManager;
 import com.bandwidth.androidreference.data.User;
+import com.bandwidth.bwsip.constants.BWCallState;
 
 
 public class AccountInfoFragment extends Fragment {
 
-
+    private TextView textViewRegistrationState;
+    private LocalBroadcastManager broadcastManager;
+    private IntentReceiver intentReceiver;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         MainActivity mainActivity = (MainActivity) this.getActivity();
+
+        broadcastManager = LocalBroadcastManager.getInstance(this.getActivity());
+        intentReceiver = new IntentReceiver();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(BWSipIntent.REGISTRATION);
+        broadcastManager.registerReceiver(intentReceiver, intentFilter);
 
         View rootView = inflater.inflate(R.layout.fragment_account_info, container, false);
 
@@ -28,6 +44,10 @@ public class AccountInfoFragment extends Fragment {
         TextView textViewEndpointName = (TextView) rootView.findViewById(R.id.textViewEndpointName);
         TextView textViewRegistrar = (TextView) rootView.findViewById(R.id.textViewRegistrar);
         TextView textViewSipUri = (TextView) rootView.findViewById(R.id.textViewSipUri);
+        textViewRegistrationState = (TextView) rootView.findViewById(R.id.textViewRegistrationState);
+
+        CallService.RegistrationState registrationState = CallService.getRegistrationState();
+        textViewRegistrationState.setText(getResources().getStringArray(R.array.registration_state)[registrationState.ordinal()]);
 
         User user = SaveManager.getUser(mainActivity);
 
@@ -40,6 +60,22 @@ public class AccountInfoFragment extends Fragment {
         mainActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         return rootView;
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        broadcastManager.unregisterReceiver(intentReceiver);
+    }
+
+    private class IntentReceiver extends BroadcastReceiver
+    {
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(BWSipIntent.REGISTRATION)) {
+                CallService.RegistrationState registrationState = (CallService.RegistrationState) intent.getSerializableExtra(BWSipIntent.REGISTRATION);
+                textViewRegistrationState.setText(getResources().getStringArray(R.array.registration_state)[registrationState.ordinal()]);
+            }
+        }
     }
 
 }

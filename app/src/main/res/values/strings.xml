@@ -35,4 +35,11 @@
     <string name="dialog_readme_message">You need to set your application server URL in the ClientApi.java file before running this app. Please read the README.md for more details.</string>
     <string name="toast_registration_error">Error during SIP registration: %1$s</string>
     <string name="toast_call_ended_message">Call ended</string>
+    <string name="registration_state">Registration state</string>
+    <string-array
+        name="registration_state">
+        <item>Not registered</item>
+        <item>Registering&#8230;</item>
+        <item>Registered</item>
+    </string-array>
 </resources>

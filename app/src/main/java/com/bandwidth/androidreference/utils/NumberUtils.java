@@ -1,5 +1,11 @@
 package com.bandwidth.androidreference.utils;
 
+import android.content.ContentResolver;
+import android.content.Context;
+import android.database.Cursor;
+import android.net.Uri;
+import android.provider.ContactsContract;
+
 public class NumberUtils {
 
     public static String removeExtraCharacters(String phoneNumber) {
@@ -43,5 +49,22 @@ public class NumberUtils {
             number = uri.substring(uri.indexOf(":") + 1, uri.indexOf("@"));
         }
         return getPrettyPhoneNumber(number);
+    }
+
+    public static String getContactName(Context context, String phoneNumber) {
+        ContentResolver contentResolver = context.getContentResolver();
+        Uri uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(phoneNumber));
+        Cursor cursor = contentResolver.query(uri, new String[]{ContactsContract.PhoneLookup.DISPLAY_NAME}, null, null, null);
+        if (cursor == null) {
+            return phoneNumber;
+        }
+        if(cursor.moveToFirst()) {
+            String contactName = cursor.getString(cursor.getColumnIndex(ContactsContract.PhoneLookup.DISPLAY_NAME));
+            cursor.close();
+            return contactName;
+        }
+        else {
+            return phoneNumber;
+        }
     }
 }

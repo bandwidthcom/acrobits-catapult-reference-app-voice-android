@@ -83,7 +83,7 @@ public class DialerFragment extends Fragment {
         @Override
         public void onClick(View v) {
             editTextNumber.setText(NumberUtils.getPrettyPhoneNumber(editTextNumber.getText() + v.getTag().toString()));
-            BWTone.playDigit(v.getTag().toString());
+            BWTone.playDigit(v.getTag().toString(), 0.5f);
             buttonCall.setEnabled(true);
         }
     };

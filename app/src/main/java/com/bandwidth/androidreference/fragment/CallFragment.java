@@ -1,5 +1,6 @@
 package com.bandwidth.androidreference.fragment;
 
+import android.app.IntentService;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -36,16 +37,15 @@ public class CallFragment extends Fragment {
     private Timer timer;
     private CallDurationTimer callDurationTimer;
     private PowerManager.WakeLock wakeLock;
+    private LocalBroadcastManager broadcastManager;
+    private IntentReceiver intentReceiver;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         final CallActivity activity = (CallActivity) getActivity();
-        final LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this.getActivity());
-        IntentReceiver intentReceiver = new IntentReceiver();
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(BWSipIntent.END_CALL);
-        broadcastManager.registerReceiver(intentReceiver, intentFilter);
+        broadcastManager = LocalBroadcastManager.getInstance(this.getActivity());
+        intentReceiver = new IntentReceiver();
         PowerManager powerManager = (PowerManager) getActivity().getSystemService(Context.POWER_SERVICE);
         wakeLock = powerManager.newWakeLock(PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK, "active_call");
         wakeLock.setReferenceCounted(false);
@@ -146,6 +146,9 @@ public class CallFragment extends Fragment {
             timer.schedule(callDurationTimer, 0, 1000);
         }
         wakeLock.acquire();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(BWSipIntent.CALL_STATE);
+        broadcastManager.registerReceiver(intentReceiver, intentFilter);
     }
 
     @Override
@@ -158,6 +161,8 @@ public class CallFragment extends Fragment {
         if (wakeLock.isHeld()) {
             wakeLock.release();
         }
+
+        broadcastManager.unregisterReceiver(intentReceiver);
     }
 
     public void setPhoneNumber(String number) {
@@ -171,8 +176,8 @@ public class CallFragment extends Fragment {
     {
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(BWSipIntent.CALL_STATE)) {
-                String callState = intent.getStringExtra(BWSipIntent.CALL_STATE);
-                if (callState.equals(BWCallState.DISCONNECTED.toString())) {
+                BWCallState callState = (BWCallState) intent.getSerializableExtra(BWSipIntent.CALL_STATE);
+                if (callState.equals(BWCallState.DISCONNECTED)) {
                     getActivity().finish();
                 }
             }
@@ -182,7 +187,13 @@ public class CallFragment extends Fragment {
     private class CallDurationTimer extends TimerTask {
         @Override
         public void run() {
-            long duration = new Date().getTime() - CallService.getCallStartTime();
+            long duration;
+            if (CallService.getCallStartTime() != null ) {
+                duration = new Date().getTime() - CallService.getCallStartTime();
+            }
+            else {
+                duration = 0;
+            }
             final double seconds = Math.floor(duration / 1000) % 60;
             final double minutes = Math.floor(duration / 60000);
             getActivity().runOnUiThread(new Runnable() {
