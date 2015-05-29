@@ -19,6 +19,7 @@ import com.bandwidth.androidreference.utils.SaveManager;
 import com.bandwidth.bwsip.BWAccount;
 import com.bandwidth.bwsip.BWCall;
 import com.bandwidth.bwsip.BWPhone;
+import com.bandwidth.bwsip.BWTone;
 import com.bandwidth.bwsip.constants.BWOutputRoute;
 import com.bandwidth.bwsip.constants.BWSipResponse;
 import com.bandwidth.bwsip.constants.BWTransport;
@@ -36,6 +37,7 @@ public class CallService extends Service implements BWCallDelegate, BWAccountDel
     }
 
     private static BWPhone phone;
+    private static BWTone bwTone;
     private static BWAccount account;
     private static BWCall currentCall;
     private static IntentReceiver intentReceiver;
@@ -84,9 +86,11 @@ public class CallService extends Service implements BWCallDelegate, BWAccountDel
 
         if (phone == null) {
             phone = BWPhone.getInstance();
-            phone.setTransportType(BWTransport.UDP);
+            phone.setTransportType(BWTransport.TCP);
             phone.setLogLevel(9);
             phone.initialize();
+            bwTone = new BWTone();
+            phone.setAudioOutputRoute(getBaseContext(), BWOutputRoute.LOUDSPEAKER);
         }
         if (account == null) {
             registerUser();
@@ -104,7 +108,7 @@ public class CallService extends Service implements BWCallDelegate, BWAccountDel
 
     @Override
     public void onIncomingDTMF(BWCall bwCall, String s) {
-
+        bwTone.playDigit(s);
     }
 
     @Override
@@ -184,6 +188,7 @@ public class CallService extends Service implements BWCallDelegate, BWAccountDel
         currentCall.setRemoteUri(tn + "@" + registrar);
         currentCall.makeCall();
         callStartTime = new Date().getTime();
+        phone.setAudioOutputRoute(getBaseContext(), BWOutputRoute.EARPIECE);
         return currentCall;
     }
 
@@ -204,6 +209,7 @@ public class CallService extends Service implements BWCallDelegate, BWAccountDel
             currentCall.hangupCall();
             currentCall.close();
             currentCall = null;
+            phone.setAudioOutputRoute(getBaseContext(), BWOutputRoute.LOUDSPEAKER);
         }
     }
 

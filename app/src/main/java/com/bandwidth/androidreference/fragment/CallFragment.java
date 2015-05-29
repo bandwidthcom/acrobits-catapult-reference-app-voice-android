@@ -5,11 +5,13 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -39,11 +41,14 @@ public class CallFragment extends Fragment {
     private PowerManager.WakeLock wakeLock;
     private LocalBroadcastManager broadcastManager;
     private IntentReceiver intentReceiver;
+    private BWTone bwTone;
+    private AudioManager audioManager;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         final CallActivity activity = (CallActivity) getActivity();
+        audioManager = (AudioManager) getActivity().getSystemService(Context.AUDIO_SERVICE);
         broadcastManager = LocalBroadcastManager.getInstance(this.getActivity());
         intentReceiver = new IntentReceiver();
         PowerManager powerManager = (PowerManager) getActivity().getSystemService(Context.POWER_SERVICE);
@@ -132,10 +137,29 @@ public class CallFragment extends Fragment {
         @Override
         public void onClick(View v) {
             textViewNumber.setText(NumberUtils.getPrettyPhoneNumber(textViewNumber.getText() + v.getTag().toString()));
-            BWTone.playDigit(v.getTag().toString());
             CallService.dialDTMF(v.getTag().toString());
         }
     };
+
+    View.OnTouchListener dialerButtonTouchListener = new View.OnTouchListener() {
+        @Override
+        public boolean onTouch(View v, MotionEvent motionEvent) {
+            if (bwTone == null) {
+                bwTone = new BWTone();
+            }
+            if (audioManager.getRingerMode() != AudioManager.RINGER_MODE_SILENT &&
+                    audioManager.getRingerMode() != AudioManager.RINGER_MODE_VIBRATE) {
+                if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+                    bwTone.startDigit(v.getTag().toString(), 0.5f);
+                } else if (motionEvent.getAction() == MotionEvent.ACTION_UP ||
+                        motionEvent.getAction() == MotionEvent.ACTION_CANCEL) {
+                    bwTone.stopDigit();
+                }
+            }
+            return false;
+        }
+    };
+
 
     @Override
     public void onResume() {

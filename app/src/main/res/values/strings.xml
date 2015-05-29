@@ -7,7 +7,7 @@
     <string name="username">Username</string>
     <string name="register">Register</string>
     <string name="toast_register_message">Your phone number is %1$s</string>
-    <string name="toast_register_error">Error registering user!</string>
+    <string name="toast_regigister_error">Error registering user!</string>
     <string name="ok">OK</string>
     <string name="call">Call</string>
     <string name="end_call">End Call</string>

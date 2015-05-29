@@ -28,7 +28,7 @@ public class IncomingCallFragment extends Fragment {
     private String callerNumber;
     private Ringtone ringtone;
     Vibrator vibrator;
-    private long[] vibrationPattern = {0, 1000, 1000};
+    private long[] vibrationPattern = {0, 1000, 1000, 1000, 1000, 1000, 1000};
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -84,8 +84,10 @@ public class IncomingCallFragment extends Fragment {
         vibrator = (Vibrator) activity.getSystemService(Context.VIBRATOR_SERVICE);
 
         if (audioManager.getRingerMode() != AudioManager.RINGER_MODE_SILENT) {
-            ringtone.play();
             vibrator.vibrate(vibrationPattern, 0);
+            if (audioManager.getRingerMode() != AudioManager.RINGER_MODE_VIBRATE) {
+                ringtone.play();
+            }
         }
 
         setFlags();

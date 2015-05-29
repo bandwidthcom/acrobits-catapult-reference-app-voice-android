@@ -93,7 +93,7 @@ public class RegisterFragment extends Fragment {
                     else {
                         progressBarRegister.setVisibility(View.GONE);
                         buttonRegister.setVisibility(View.VISIBLE);
-                        Toast.makeText(getActivity(), getResources().getString(R.string.toast_register_error), Toast.LENGTH_LONG).show();
+                        Toast.makeText(getActivity(), getResources().getString(R.string.toast_registration_error), Toast.LENGTH_LONG).show();
                     }
                 }
             };

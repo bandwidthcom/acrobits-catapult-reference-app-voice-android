@@ -1,10 +1,13 @@
 package com.bandwidth.androidreference.fragment;
 
+import android.content.Context;
 import android.content.Intent;
+import android.media.AudioManager;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -24,12 +27,13 @@ public class DialerFragment extends Fragment {
 
     private EditText editTextNumber;
     private Button buttonCall;
-
+    private BWTone bwTone;
+    private AudioManager audioManager;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        final LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(getActivity());
+        audioManager = (AudioManager) getActivity().getSystemService(Context.AUDIO_SERVICE);
         View rootView = inflater.inflate(R.layout.fragment_dialer, container, false);
 
         RelativeLayout button0 = (RelativeLayout) rootView.findViewById(R.id.button0);
@@ -61,6 +65,21 @@ public class DialerFragment extends Fragment {
         button0.setOnClickListener(dialerButtonClickListener);
         buttonStar.setOnClickListener(dialerButtonClickListener);
         buttonPound.setOnClickListener(dialerButtonClickListener);
+
+        button0.setOnTouchListener(dialerButtonTouchListener);
+        button1.setOnTouchListener(dialerButtonTouchListener);
+        button2.setOnTouchListener(dialerButtonTouchListener);
+        button3.setOnTouchListener(dialerButtonTouchListener);
+        button4.setOnTouchListener(dialerButtonTouchListener);
+        button5.setOnTouchListener(dialerButtonTouchListener);
+        button6.setOnTouchListener(dialerButtonTouchListener);
+        button7.setOnTouchListener(dialerButtonTouchListener);
+        button8.setOnTouchListener(dialerButtonTouchListener);
+        button9.setOnTouchListener(dialerButtonTouchListener);
+        button0.setOnTouchListener(dialerButtonTouchListener);
+        buttonStar.setOnTouchListener(dialerButtonTouchListener);
+        buttonPound.setOnTouchListener(dialerButtonTouchListener);
+
         buttonBackspace.setOnClickListener(buttonBackspaceClickListener);
 
         buttonCall.setOnClickListener(new View.OnClickListener() {
@@ -83,8 +102,27 @@ public class DialerFragment extends Fragment {
         @Override
         public void onClick(View v) {
             editTextNumber.setText(NumberUtils.getPrettyPhoneNumber(editTextNumber.getText() + v.getTag().toString()));
-            BWTone.playDigit(v.getTag().toString(), 0.5f);
+
             buttonCall.setEnabled(true);
+        }
+    };
+
+    View.OnTouchListener dialerButtonTouchListener = new View.OnTouchListener() {
+        @Override
+        public boolean onTouch(View v, MotionEvent motionEvent) {
+            if (bwTone == null) {
+                bwTone = new BWTone();
+            }
+            if (audioManager.getRingerMode() != AudioManager.RINGER_MODE_SILENT &&
+                    audioManager.getRingerMode() != AudioManager.RINGER_MODE_VIBRATE) {
+                if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+                    bwTone.startDigit(v.getTag().toString(), 0.5f);
+                } else if (motionEvent.getAction() == MotionEvent.ACTION_UP ||
+                        motionEvent.getAction() == MotionEvent.ACTION_CANCEL) {
+                    bwTone.stopDigit();
+                }
+            }
+            return false;
         }
     };
 
