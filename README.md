@@ -42,3 +42,25 @@ Just grab this repository by running:
   - You can also see your phone number from the Account info menu item
  - You can now receive phone calls at this phone number
  - You can also dial a phone number and tap Call to place a call
+
+## Adding voice support to your own app
+The only file you will need to add to your app is ```app/libs/bwsip-framework.aar``` and add it as a dependency:
+
+```
+repositories {
+    flatDir {
+        dirs 'libs'
+    }
+}
+
+dependencies {
+    compile(name: 'bwsip-framework', ext: 'aar')
+}
+```
+
+You can then use the code provided by this sample app as the basis for your own implementation.
+
+More BWSip resources:
+
+* [Dev Guide](https://github.com/bandwidthcom/catapult-reference-app-voice-android/blob/master/bwsip-dev-guide-android.pdf)
+* [API Reference](https://github.com/bandwidthcom/catapult-reference-app-voice-android/blob/master/bwsip-api-android.pdf)
