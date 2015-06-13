@@ -20,6 +20,7 @@ import com.bandwidth.bwsip.BWAccount;
 import com.bandwidth.bwsip.BWCall;
 import com.bandwidth.bwsip.BWPhone;
 import com.bandwidth.bwsip.BWTone;
+import com.bandwidth.bwsip.constants.BWCallState;
 import com.bandwidth.bwsip.constants.BWOutputRoute;
 import com.bandwidth.bwsip.constants.BWSipResponse;
 import com.bandwidth.bwsip.constants.BWTransport;
@@ -104,6 +105,10 @@ public class CallService extends Service implements BWCallDelegate, BWAccountDel
         intent.setAction(BWSipIntent.CALL_STATE);
         intent.putExtra(BWSipIntent.CALL_STATE, bwCall.getLastState());
         broadcastManager.sendBroadcast(intent);
+
+        if (bwCall.getLastState().equals(BWCallState.DISCONNECTED)) {
+            endCall();
+        }
     }
 
     @Override
@@ -168,7 +173,6 @@ public class CallService extends Service implements BWCallDelegate, BWAccountDel
         if (SaveManager.getUsername(getBaseContext()) != null) {
             registrationState = RegistrationState.REGISTERING;
             broadcastRegistrationState();
-
             account = new BWAccount(phone);
             account.setDelegate(this);
             account.setRegistrar(SaveManager.getRealm(this));
@@ -182,6 +186,7 @@ public class CallService extends Service implements BWCallDelegate, BWAccountDel
         if (tn.charAt(0) != '1') {
             tn = "1" + tn;
         }
+        tn = "+" + tn;
         String registrar = SaveManager.getRealm(this);
         currentCall = new BWCall(account);
         currentCall.setDelegate(this);

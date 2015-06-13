@@ -1,6 +1,5 @@
 package com.bandwidth.androidreference.fragment;
 
-import android.app.IntentService;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
