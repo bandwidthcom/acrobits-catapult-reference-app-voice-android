@@ -48,7 +48,7 @@ public class IncomingCallFragment extends Fragment {
                 vibrator.cancel();
 
                 Intent intent = new Intent(activity, CallActivity.class);
-                intent.setAction(BWSipIntent.PHONE_CALL);
+                intent.setAction(BWSipIntent.ANSWER_CALL);
                 intent.putExtra(BWSipIntent.PHONE_CALL, textViewIncomingNumber.getText().toString());
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 activity.startActivity(intent);
