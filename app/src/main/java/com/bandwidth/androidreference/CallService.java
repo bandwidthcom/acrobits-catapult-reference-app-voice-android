@@ -18,6 +18,7 @@ import com.bandwidth.androidreference.utils.NumberUtils;
 import com.bandwidth.androidreference.utils.SaveManager;
 import com.bandwidth.bwsip.BWAccount;
 import com.bandwidth.bwsip.BWCall;
+import com.bandwidth.bwsip.BWCredentials;
 import com.bandwidth.bwsip.BWPhone;
 import com.bandwidth.bwsip.BWTone;
 import com.bandwidth.bwsip.constants.BWCallState;
@@ -176,7 +177,7 @@ public class CallService extends Service implements BWCallDelegate, BWAccountDel
             account = new BWAccount(phone);
             account.setDelegate(this);
             account.setRegistrar(SaveManager.getRealm(this));
-            account.setCredentials(SaveManager.getCredUsername(this), SaveManager.getPassword(this));
+            account.setCredentials(BWCredentials.createWithPassword(SaveManager.getCredUsername(this), SaveManager.getPassword(this)));
             account.connect();
         }
     }
