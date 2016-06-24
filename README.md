@@ -1,7 +1,7 @@
 Bandwidth Voice Reference Android App
 ===============================
 
-This project is a fully functioning Android app that leverages the BWsip framework to register users, and make and receive calls.
+This project is a fully functioning Android app that leverages the BWsip framework to register users, and make and receive calls. Bandwidth’s provides the Mobile SDK and Reference Apps as “Beta”, free of charge to try and use.  If you are looking for a fully supported commercial Mobile SDK for iOS and Android compatible with Bandwidth platform and services, please contact us. 
 
 ![App screenshot](https://github.com/bandwidthcom/catapult-reference-app-voice-android/blob/master/screenshot.png)
 
