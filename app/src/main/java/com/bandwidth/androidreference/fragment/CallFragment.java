@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.AudioManager;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.PowerManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
@@ -70,6 +69,20 @@ public class CallFragment extends Fragment {
         RelativeLayout buttonPound = (RelativeLayout) rootView.findViewById(R.id.buttonPound);
         RelativeLayout buttonStar = (RelativeLayout) rootView.findViewById(R.id.buttonStar);
 
+        button0.setOnClickListener(dialerButtonClickListener);
+        button1.setOnClickListener(dialerButtonClickListener);
+        button2.setOnClickListener(dialerButtonClickListener);
+        button3.setOnClickListener(dialerButtonClickListener);
+        button4.setOnClickListener(dialerButtonClickListener);
+        button5.setOnClickListener(dialerButtonClickListener);
+        button6.setOnClickListener(dialerButtonClickListener);
+        button7.setOnClickListener(dialerButtonClickListener);
+        button8.setOnClickListener(dialerButtonClickListener);
+        button9.setOnClickListener(dialerButtonClickListener);
+        button0.setOnClickListener(dialerButtonClickListener);
+        buttonStar.setOnClickListener(dialerButtonClickListener);
+        buttonPound.setOnClickListener(dialerButtonClickListener);
+
         button0.setOnTouchListener(dialerButtonTouchListener);
         button1.setOnTouchListener(dialerButtonTouchListener);
         button2.setOnTouchListener(dialerButtonTouchListener);
@@ -132,6 +145,13 @@ public class CallFragment extends Fragment {
         return rootView;
     }
 
+    View.OnClickListener dialerButtonClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            textViewNumber.setText(NumberUtils.getPrettyPhoneNumber(textViewNumber.getText() + v.getTag().toString()));
+        }
+    };
+
     View.OnTouchListener dialerButtonTouchListener = new View.OnTouchListener() {
         @Override
         public boolean onTouch(View v, MotionEvent motionEvent) {
@@ -143,10 +163,6 @@ public class CallFragment extends Fragment {
                         motionEvent.getAction() == MotionEvent.ACTION_CANCEL) {
                     Instance.Audio.dtmfOff();
                 }
-            }
-
-            if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
-                textViewNumber.setText(NumberUtils.getPrettyPhoneNumber(textViewNumber.getText() + v.getTag().toString()));
             }
 
             return false;
