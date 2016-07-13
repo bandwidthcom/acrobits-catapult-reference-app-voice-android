@@ -3,6 +3,9 @@
     <!-- Before running this application, change the variable below to point to your application server -->
     <string name="application_server_url">https://YOUR_APPLICATION_SERVER_URL_GOES_HERE</string>
 
+    <!-- Before running this application, change the variable below to your Acrobits license id -->
+    <string name="acrobits_license_id"></string>
+
     <string name="app_name">Bandwidth Phone</string>
     <string name="username">Username</string>
     <string name="register">Register</string>
@@ -36,10 +39,7 @@
     <string name="toast_registration_error">Error during SIP registration: %1$s</string>
     <string name="toast_call_ended_message">Call ended</string>
     <string name="registration_state">Registration state</string>
-    <string-array
-        name="registration_state">
-        <item>Not registered</item>
-        <item>Registering&#8230;</item>
-        <item>Registered</item>
-    </string-array>
+    <string name="registration_state_not_registered">Not registered</string>
+    <string name="registration_state_registering">Registering&#8230;</string>
+    <string name="registration_state_registered">Registered</string>
 </resources>

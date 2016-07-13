@@ -9,44 +9,45 @@ import android.content.IntentFilter;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 
 import com.bandwidth.androidreference.activity.IncomingCallActivity;
 import com.bandwidth.androidreference.intent.BWSipIntent;
 import com.bandwidth.androidreference.utils.NotificationHelper;
 import com.bandwidth.androidreference.utils.NumberUtils;
 import com.bandwidth.androidreference.utils.SaveManager;
-import com.bandwidth.bwsip.BWAccount;
-import com.bandwidth.bwsip.BWCall;
-import com.bandwidth.bwsip.BWCredentials;
-import com.bandwidth.bwsip.BWPhone;
-import com.bandwidth.bwsip.BWTone;
-import com.bandwidth.bwsip.constants.BWCallState;
-import com.bandwidth.bwsip.constants.BWOutputRoute;
-import com.bandwidth.bwsip.constants.BWSipResponse;
-import com.bandwidth.bwsip.constants.BWTransport;
-import com.bandwidth.bwsip.delegates.BWAccountDelegate;
-import com.bandwidth.bwsip.delegates.BWCallDelegate;
 
 import java.util.Date;
 
-public class CallService extends Service implements BWCallDelegate, BWAccountDelegate {
+import cz.acrobits.ali.AndroidUtil;
+import cz.acrobits.ali.Xml;
+import cz.acrobits.libsoftphone.Instance;
+import cz.acrobits.libsoftphone.data.AudioRoute;
+import cz.acrobits.libsoftphone.data.Call;
+import cz.acrobits.libsoftphone.data.RegistrationState;
+import cz.acrobits.libsoftphone.event.CallEvent;
+import cz.acrobits.libsoftphone.event.StreamParty;
+import cz.acrobits.libsoftphone.support.Listeners;
 
-    public enum RegistrationState {
-        NOT_REGISTERED,
-        REGISTERING,
-        REGISTERED
-    }
+public class CallService extends Service implements Listeners.OnIncomingCall,
+        Listeners.OnRegistrationStateChanged, Listeners.OnCallStateChanged {
 
-    private static BWPhone phone;
-    private static BWTone bwTone;
-    private static BWAccount account;
-    private static BWCall currentCall;
+    private static final String TAG = "CallService";
+    public static final String TEST_ACCOUNT_ID = "Test Account";
+
     private static IntentReceiver intentReceiver;
     private static Long callStartTime;
-    private static RegistrationState registrationState = RegistrationState.NOT_REGISTERED;
+    private static RegistrationState registrationState = RegistrationState.NotRegistered;
+    private static boolean isLibraryInitialized;
 
     private final IBinder mBinder = new LocalBinder();
+    private final Listeners listeners = new Listeners();
+
+    private CallEvent currentCall;
+    private Xml accountXml;
 
     public class LocalBinder extends Binder {
         public CallService getService() {
@@ -86,47 +87,95 @@ public class CallService extends Service implements BWCallDelegate, BWAccountDel
             LocalBroadcastManager.getInstance(this).registerReceiver(intentReceiver, intentFilter);
         }
 
-        if (phone == null) {
-            phone = BWPhone.getInstance();
-            phone.setTransportType(BWTransport.TCP);
-            phone.setLogLevel(9);
-            phone.initialize();
-            bwTone = new BWTone();
-            phone.setAudioOutputRoute(getBaseContext(), BWOutputRoute.LOUDSPEAKER);
+        Instance.loadLibrary(getApplicationContext());
+        Xml prov = new Xml("provisioning");
+
+        Xml saas = new Xml("saas");
+        saas.replaceChild("identifier", getString(R.string.acrobits_license_id));
+        prov.replaceChild(saas);
+
+        if (!isLibraryInitialized) {
+            isLibraryInitialized = Instance.init(getApplicationContext(), prov);
         }
-        if (account == null) {
+
+        Instance.setObserver(listeners);
+        listeners.register(this);
+        Instance.State.update(Instance.State.Background);
+
+        Instance.Audio.setCallAudioRoute(AudioRoute.Headset);
+
+        if (accountXml == null) {
             registerUser();
         }
     }
 
     @Override
-    public void onCallStateChanged(BWCall bwCall) {
+    public void onDestroy() {
+        super.onDestroy();
+    }
+
+    @Override
+    public void onIncomingCall(@NonNull CallEvent callEvent) {
+        Log.i(TAG, "New incoming call: " + Instance.Calls.getState(callEvent));
+
+        if (currentCall == null) {
+            if (Instance.Calls.getState(callEvent) != Call.State.IncomingRinging) {
+                return;
+            }
+
+            currentCall = callEvent;
+            callStartTime = new Date().getTime();
+
+            KeyguardManager keyguardManager = (KeyguardManager) getBaseContext().getSystemService(Context.KEYGUARD_SERVICE);
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && !keyguardManager.inKeyguardRestrictedInputMode()) {
+                NotificationHelper.placeIncomingCallNotification(getBaseContext(), callEvent.getRemoteUser().getTransportUri());
+            }
+            else {
+                Intent intent = new Intent(getBaseContext(), IncomingCallActivity.class);
+                intent.setAction(BWSipIntent.INCOMING_CALL);
+                intent.putExtra(BWSipIntent.INCOMING_CALL, callEvent.getRemoteUser().getTransportUri());
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent.addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
+                intent.addFlags(Intent.FLAG_FROM_BACKGROUND);
+                intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+                getApplication().startActivity(intent);
+            }
+        }
+        else {
+            Instance.Calls.rejectIncoming(callEvent);
+        }
+    }
+
+    @Override
+    public void onRegistrationStateChanged(@Nullable String changedAccount, @NonNull RegistrationState newRegistrationState) {
+        Log.i(TAG, String.format("Account [%s] new registration state [%s]", changedAccount, newRegistrationState));
+
+        registrationState = newRegistrationState;
+        broadcastRegistrationState();
+    }
+
+    @Override
+    public void onCallStateChanged(@NonNull CallEvent callEvent, @NonNull Call.State state) {
+        Log.i(TAG, String.format("Call [%s] state changed to [%s]", callEvent, state));
+
         LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
         Intent intent = new Intent();
         intent.setAction(BWSipIntent.CALL_STATE);
-        intent.putExtra(BWSipIntent.CALL_STATE, bwCall.getLastState());
+        intent.putExtra(BWSipIntent.CALL_STATE, state);
         broadcastManager.sendBroadcast(intent);
 
-        if (bwCall.getLastState().equals(BWCallState.DISCONNECTED)) {
+        if (state.isTerminal()) {
             endCall();
         }
     }
 
+    /*
     @Override
     public void onIncomingDTMF(BWCall bwCall, String s) {
         bwTone.playDigit(s);
     }
-
-    @Override
-    public void onRegStateChanged(final BWAccount bwAccount) {
-        if (bwAccount.getLastState().equals(BWSipResponse.OK)) {
-            registrationState = RegistrationState.REGISTERED;
-        }
-        else {
-            registrationState = RegistrationState.NOT_REGISTERED;
-        }
-        broadcastRegistrationState();
-    }
+    */
 
     private void broadcastRegistrationState() {
         LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
@@ -137,85 +186,71 @@ public class CallService extends Service implements BWCallDelegate, BWAccountDel
     }
 
     @Override
-    public void onIncomingCall(BWCall bwCall) {
-        if (currentCall == null) {
-            currentCall = bwCall;
-            bwCall.setDelegate(this);
-            bwCall.answerCall(BWSipResponse.RINGING);
-            callStartTime = new Date().getTime();
-
-            KeyguardManager keyguardManager = (KeyguardManager) getBaseContext().getSystemService(Context.KEYGUARD_SERVICE);
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && !keyguardManager.inKeyguardRestrictedInputMode()) {
-                NotificationHelper.placeIncomingCallNotification(getBaseContext(), NumberUtils.fromSipUri(bwCall.getRemoteUri()));
-            }
-            else {
-                Intent intent = new Intent(getBaseContext(), IncomingCallActivity.class);
-                intent.setAction(BWSipIntent.INCOMING_CALL);
-                intent.putExtra(BWSipIntent.INCOMING_CALL, NumberUtils.fromSipUri(bwCall.getRemoteUri()));
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                intent.addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
-                intent.addFlags(Intent.FLAG_FROM_BACKGROUND);
-                intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
-                getApplication().startActivity(intent);
-            }
-        }
-        else {
-            bwCall.answerCall(BWSipResponse.BUSY_HERE);
-        }
-    }
-
-    @Override
     public int onStartCommand(Intent intent, int fvlags, int startId) {
         return START_STICKY;
     }
 
     private void registerUser() {
         if (SaveManager.getUsername(getBaseContext()) != null) {
-            registrationState = RegistrationState.REGISTERING;
+            accountXml = Instance.Registration.getAccount(TEST_ACCOUNT_ID);
+            if (accountXml == null) {
+                // Register an account
+                accountXml = new Xml("account");
+                accountXml.setAttribute("id", TEST_ACCOUNT_ID);
+                accountXml.setChildValue("username", SaveManager.getCredUsername(this));
+                accountXml.setChildValue("password", SaveManager.getPassword(this));
+                accountXml.setChildValue("host", SaveManager.getRealm(this));
+                accountXml.setChildValue("dtmfOrder", "rfc2833,audio");
+                Instance.Registration.saveAccount(accountXml);
+            }
+            Instance.State.update(Instance.State.Active);
+
+            registrationState = Instance.Registration.getRegistrationState(TEST_ACCOUNT_ID);
             broadcastRegistrationState();
-            account = new BWAccount(phone);
-            account.setDelegate(this);
-            account.setRegistrar(SaveManager.getRealm(this));
-            account.setCredentials(BWCredentials.createWithPassword(SaveManager.getCredUsername(this), SaveManager.getPassword(this)));
-            account.connect();
         }
     }
 
-    private BWCall makeCall(String number) {
+    private CallEvent makeCall(String number) {
         String tn = NumberUtils.removeExtraCharacters(number);
         if (tn.charAt(0) != '1') {
             tn = "1" + tn;
         }
         tn = "+" + tn;
-        String registrar = SaveManager.getRealm(this);
-        currentCall = new BWCall(account);
-        currentCall.setDelegate(this);
-        currentCall.setRemoteUri(tn + "@" + registrar);
-        currentCall.makeCall();
+        currentCall = new CallEvent(new StreamParty(tn).match(TEST_ACCOUNT_ID).toRemoteUser());
+        int res = Instance.Events.post(currentCall);
+        if (res != Instance.Events.PostResult.SUCCESS)
+        {
+            AndroidUtil.toast(false, "Call failed: %d", res);
+            currentCall = null;
+            return null;
+        }
         callStartTime = new Date().getTime();
-        phone.setAudioOutputRoute(getBaseContext(), BWOutputRoute.EARPIECE);
+        Instance.Audio.setCallAudioRoute(AudioRoute.Headset);
         return currentCall;
     }
 
     private void answerIncomingCall() {
-        phone.setAudioOutputRoute(getBaseContext(), BWOutputRoute.EARPIECE);
-        currentCall.answerCall(BWSipResponse.OK);
+        Instance.Audio.setCallAudioRoute(AudioRoute.Headset);
+
+        Log.i(TAG, "Call state before answer: " + Instance.Calls.getState(currentCall));
+        boolean answerResult = Instance.Calls.answerIncoming(currentCall, Call.DesiredMedia.videoBothWays());
+        Log.i(TAG, "Answer result: " + answerResult);
+        Log.i(TAG, "Call state after answer: " + Instance.Calls.getState(currentCall));
     }
 
     private void declineIncomingCall() {
         if (currentCall != null) {
-            currentCall.answerCall(BWSipResponse.DECLINE);
+            Instance.Calls.ignoreIncoming(currentCall);
             endCall();
         }
     }
 
     private void endCall() {
         if (currentCall != null) {
-            currentCall.hangupCall();
+            Instance.Calls.hangup(currentCall);
             currentCall.close();
             currentCall = null;
-            phone.setAudioOutputRoute(getBaseContext(), BWOutputRoute.LOUDSPEAKER);
+            Instance.Audio.setCallAudioRoute(AudioRoute.Speaker);
         }
     }
 
@@ -223,28 +258,19 @@ public class CallService extends Service implements BWCallDelegate, BWAccountDel
         return callStartTime;
     }
 
-    public static void dialDTMF(String digits) {
-        if (currentCall != null) {
-            currentCall.dialDTMF(digits);
-        }
-    }
-
     private void renewRegistration() {
-        if (account != null) {
-            registrationState = RegistrationState.REGISTERING;
-            broadcastRegistrationState();
-            account.updateRegistration(true);
+        if (accountXml != null) {
+            Instance.Registration.deleteAccount(TEST_ACCOUNT_ID);
+            accountXml = null;
         }
-        else {
-            registerUser();
-        }
+        registerUser();
     }
 
     private void deregister() {
-        if (account != null) {
-            account.close();
-            account = null;
-            registrationState = RegistrationState.NOT_REGISTERED;
+        if (accountXml != null) {
+            Instance.Registration.deleteAccount(TEST_ACCOUNT_ID);
+            accountXml = null;
+            registrationState = RegistrationState.NotRegistered;
             broadcastRegistrationState();
         }
     }
@@ -269,16 +295,16 @@ public class CallService extends Service implements BWCallDelegate, BWAccountDel
                 makeCall(intent.getStringExtra(BWSipIntent.PHONE_CALL));
             }
             else if (intent.getAction().equals(BWSipIntent.MUTE)) {
-                currentCall.setMute(true);
+                Instance.Audio.setMuted(true);
             }
             else if (intent.getAction().equals(BWSipIntent.UNMUTE)) {
-                currentCall.setMute(false);
+                Instance.Audio.setMuted(false);
             }
             else if (intent.getAction().equals(BWSipIntent.SPEAKER)) {
-                phone.setAudioOutputRoute(getBaseContext(), BWOutputRoute.LOUDSPEAKER);
+                Instance.Audio.setCallAudioRoute(AudioRoute.Speaker);
             }
             else if (intent.getAction().equals(BWSipIntent.EARPIECE)) {
-                phone.setAudioOutputRoute(getBaseContext(), BWOutputRoute.EARPIECE);
+                Instance.Audio.setCallAudioRoute(AudioRoute.Headset);
             }
             else if (intent.getAction().equals(BWSipIntent.RENEW_REGISTRATION)) {
                 renewRegistration();

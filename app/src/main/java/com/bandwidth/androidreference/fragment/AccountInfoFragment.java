@@ -18,7 +18,8 @@ import com.bandwidth.androidreference.R;
 import com.bandwidth.androidreference.intent.BWSipIntent;
 import com.bandwidth.androidreference.utils.SaveManager;
 import com.bandwidth.androidreference.data.User;
-import com.bandwidth.bwsip.constants.BWCallState;
+
+import cz.acrobits.libsoftphone.data.RegistrationState;
 
 
 public class AccountInfoFragment extends Fragment {
@@ -46,8 +47,8 @@ public class AccountInfoFragment extends Fragment {
         TextView textViewSipUri = (TextView) rootView.findViewById(R.id.textViewSipUri);
         textViewRegistrationState = (TextView) rootView.findViewById(R.id.textViewRegistrationState);
 
-        CallService.RegistrationState registrationState = CallService.getRegistrationState();
-        textViewRegistrationState.setText(getResources().getStringArray(R.array.registration_state)[registrationState.ordinal()]);
+        RegistrationState registrationState = CallService.getRegistrationState();
+        textViewRegistrationState.setText(registrationState.getLabel());
 
         User user = SaveManager.getUser(mainActivity);
 
@@ -72,8 +73,8 @@ public class AccountInfoFragment extends Fragment {
     {
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(BWSipIntent.REGISTRATION)) {
-                CallService.RegistrationState registrationState = (CallService.RegistrationState) intent.getSerializableExtra(BWSipIntent.REGISTRATION);
-                textViewRegistrationState.setText(getResources().getStringArray(R.array.registration_state)[registrationState.ordinal()]);
+                RegistrationState registrationState = (RegistrationState) intent.getSerializableExtra(BWSipIntent.REGISTRATION);
+                textViewRegistrationState.setText(registrationState.getLabel());
             }
         }
     }

@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.AudioManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.PowerManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
@@ -23,12 +24,13 @@ import com.bandwidth.androidreference.R;
 import com.bandwidth.androidreference.activity.CallActivity;
 import com.bandwidth.androidreference.intent.BWSipIntent;
 import com.bandwidth.androidreference.utils.NumberUtils;
-import com.bandwidth.bwsip.BWTone;
-import com.bandwidth.bwsip.constants.BWCallState;
 
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import cz.acrobits.libsoftphone.Instance;
+import cz.acrobits.libsoftphone.data.Call;
 
 public class CallFragment extends Fragment {
 
@@ -40,7 +42,6 @@ public class CallFragment extends Fragment {
     private PowerManager.WakeLock wakeLock;
     private LocalBroadcastManager broadcastManager;
     private IntentReceiver intentReceiver;
-    private BWTone bwTone;
     private AudioManager audioManager;
 
     @Override
@@ -69,19 +70,18 @@ public class CallFragment extends Fragment {
         RelativeLayout buttonPound = (RelativeLayout) rootView.findViewById(R.id.buttonPound);
         RelativeLayout buttonStar = (RelativeLayout) rootView.findViewById(R.id.buttonStar);
 
-        button0.setOnClickListener(dialerButtonClickListener);
-        button1.setOnClickListener(dialerButtonClickListener);
-        button2.setOnClickListener(dialerButtonClickListener);
-        button3.setOnClickListener(dialerButtonClickListener);
-        button4.setOnClickListener(dialerButtonClickListener);
-        button5.setOnClickListener(dialerButtonClickListener);
-        button6.setOnClickListener(dialerButtonClickListener);
-        button7.setOnClickListener(dialerButtonClickListener);
-        button8.setOnClickListener(dialerButtonClickListener);
-        button9.setOnClickListener(dialerButtonClickListener);
-        button0.setOnClickListener(dialerButtonClickListener);
-        buttonStar.setOnClickListener(dialerButtonClickListener);
-        buttonPound.setOnClickListener(dialerButtonClickListener);
+        button0.setOnTouchListener(dialerButtonTouchListener);
+        button1.setOnTouchListener(dialerButtonTouchListener);
+        button2.setOnTouchListener(dialerButtonTouchListener);
+        button3.setOnTouchListener(dialerButtonTouchListener);
+        button4.setOnTouchListener(dialerButtonTouchListener);
+        button5.setOnTouchListener(dialerButtonTouchListener);
+        button6.setOnTouchListener(dialerButtonTouchListener);
+        button7.setOnTouchListener(dialerButtonTouchListener);
+        button8.setOnTouchListener(dialerButtonTouchListener);
+        button9.setOnTouchListener(dialerButtonTouchListener);
+        buttonStar.setOnTouchListener(dialerButtonTouchListener);
+        buttonPound.setOnTouchListener(dialerButtonTouchListener);
 
         final Button buttonEndCall = (Button) rootView.findViewById(R.id.buttonEndCall);
         final ToggleButton buttonMute = (ToggleButton) rootView.findViewById(R.id.buttonMute);
@@ -132,29 +132,23 @@ public class CallFragment extends Fragment {
         return rootView;
     }
 
-    View.OnClickListener dialerButtonClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            textViewNumber.setText(NumberUtils.getPrettyPhoneNumber(textViewNumber.getText() + v.getTag().toString()));
-            CallService.dialDTMF(v.getTag().toString());
-        }
-    };
-
     View.OnTouchListener dialerButtonTouchListener = new View.OnTouchListener() {
         @Override
         public boolean onTouch(View v, MotionEvent motionEvent) {
-            if (bwTone == null) {
-                bwTone = new BWTone();
-            }
             if (audioManager.getRingerMode() != AudioManager.RINGER_MODE_SILENT &&
                     audioManager.getRingerMode() != AudioManager.RINGER_MODE_VIBRATE) {
                 if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
-                    bwTone.startDigit(v.getTag().toString(), 0.5f);
+                    Instance.Audio.dtmfOn(v.getTag().toString().charAt(0));
                 } else if (motionEvent.getAction() == MotionEvent.ACTION_UP ||
                         motionEvent.getAction() == MotionEvent.ACTION_CANCEL) {
-                    bwTone.stopDigit();
+                    Instance.Audio.dtmfOff();
                 }
             }
+
+            if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+                textViewNumber.setText(NumberUtils.getPrettyPhoneNumber(textViewNumber.getText() + v.getTag().toString()));
+            }
+
             return false;
         }
     };
@@ -199,8 +193,8 @@ public class CallFragment extends Fragment {
     {
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(BWSipIntent.CALL_STATE)) {
-                BWCallState callState = (BWCallState) intent.getSerializableExtra(BWSipIntent.CALL_STATE);
-                if (callState.equals(BWCallState.DISCONNECTED)) {
+                Call.State callState = (Call.State) intent.getSerializableExtra(BWSipIntent.CALL_STATE);
+                if (callState.isTerminal()) {
                     getActivity().finish();
                 }
             }

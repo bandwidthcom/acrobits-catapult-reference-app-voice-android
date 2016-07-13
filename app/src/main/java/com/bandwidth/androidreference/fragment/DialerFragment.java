@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -20,14 +19,12 @@ import com.bandwidth.androidreference.activity.CallActivity;
 import com.bandwidth.androidreference.intent.BWSipIntent;
 import com.bandwidth.androidreference.utils.NumberUtils;
 
-import com.bandwidth.bwsip.BWTone;
-
+import cz.acrobits.libsoftphone.Instance;
 
 public class DialerFragment extends Fragment {
 
     private EditText editTextNumber;
     private Button buttonCall;
-    private BWTone bwTone;
     private AudioManager audioManager;
 
     @Override
@@ -110,16 +107,13 @@ public class DialerFragment extends Fragment {
     View.OnTouchListener dialerButtonTouchListener = new View.OnTouchListener() {
         @Override
         public boolean onTouch(View v, MotionEvent motionEvent) {
-            if (bwTone == null) {
-                bwTone = new BWTone();
-            }
             if (audioManager.getRingerMode() != AudioManager.RINGER_MODE_SILENT &&
                     audioManager.getRingerMode() != AudioManager.RINGER_MODE_VIBRATE) {
                 if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
-                    bwTone.startDigit(v.getTag().toString(), 0.5f);
+                    Instance.Audio.dtmfOn(v.getTag().toString().charAt(0));
                 } else if (motionEvent.getAction() == MotionEvent.ACTION_UP ||
                         motionEvent.getAction() == MotionEvent.ACTION_CANCEL) {
-                    bwTone.stopDigit();
+                    Instance.Audio.dtmfOff();
                 }
             }
             return false;
