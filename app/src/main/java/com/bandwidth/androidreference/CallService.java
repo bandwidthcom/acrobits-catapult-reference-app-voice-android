@@ -6,7 +6,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
@@ -43,27 +42,14 @@ public class CallService extends Service implements Listeners.OnIncomingCall,
     private static RegistrationState registrationState = RegistrationState.NotRegistered;
     private static boolean isLibraryInitialized;
 
-    private final IBinder mBinder = new LocalBinder();
     private final Listeners listeners = new Listeners();
 
     private CallEvent currentCall;
     private Xml accountXml;
 
-    public class LocalBinder extends Binder {
-        public CallService getService() {
-            return CallService.this;
-        }
-    }
-
     @Override
     public IBinder onBind(Intent intent) {
-        return mBinder;
-    }
-
-    @Override
-    public boolean onUnbind(Intent intent) {
-        // return true so our service is not destroyed on unbind.
-        return true;
+        return null;
     }
 
     @Override
@@ -170,13 +156,6 @@ public class CallService extends Service implements Listeners.OnIncomingCall,
         }
     }
 
-    /*
-    @Override
-    public void onIncomingDTMF(BWCall bwCall, String s) {
-        bwTone.playDigit(s);
-    }
-    */
-
     private void broadcastRegistrationState() {
         LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
         Intent intent = new Intent();
@@ -200,7 +179,7 @@ public class CallService extends Service implements Listeners.OnIncomingCall,
                 accountXml.setChildValue("username", SaveManager.getCredUsername(this));
                 accountXml.setChildValue("password", SaveManager.getPassword(this));
                 accountXml.setChildValue("host", SaveManager.getRealm(this));
-                accountXml.setChildValue("dtmfOrder", "rfc2833,audio");
+                accountXml.setChildValue("natTraversal", "ice");
                 Instance.Registration.saveAccount(accountXml);
             }
             Instance.State.update(Instance.State.Active);
@@ -232,10 +211,7 @@ public class CallService extends Service implements Listeners.OnIncomingCall,
     private void answerIncomingCall() {
         Instance.Audio.setCallAudioRoute(AudioRoute.Headset);
 
-        Log.i(TAG, "Call state before answer: " + Instance.Calls.getState(currentCall));
-        boolean answerResult = Instance.Calls.answerIncoming(currentCall, Call.DesiredMedia.videoBothWays());
-        Log.i(TAG, "Answer result: " + answerResult);
-        Log.i(TAG, "Call state after answer: " + Instance.Calls.getState(currentCall));
+        Instance.Calls.answerIncoming(currentCall, Call.DesiredMedia.voiceOnly());
     }
 
     private void declineIncomingCall() {
