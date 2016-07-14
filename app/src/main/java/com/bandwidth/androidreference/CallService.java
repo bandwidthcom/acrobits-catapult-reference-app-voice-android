@@ -180,6 +180,9 @@ public class CallService extends Service implements Listeners.OnIncomingCall,
                 accountXml.setChildValue("password", SaveManager.getPassword(this));
                 accountXml.setChildValue("host", SaveManager.getRealm(this));
                 accountXml.setChildValue("natTraversal", "ice");
+                accountXml.setChildValue("pushMethod", "tunnel");
+                accountXml.setChildValue("sipisHost", "https://ec2-107-21-79-106.compute-1.amazonaws.com/sipis/");
+                accountXml.setChildValue("sipisRegServer", "https://ec2-107-21-79-106.compute-1.amazonaws.com/sipis/");
                 Instance.Registration.saveAccount(accountXml);
             }
             Instance.State.update(Instance.State.Active);
