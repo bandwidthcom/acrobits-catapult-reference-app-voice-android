@@ -16,7 +16,7 @@ import android.widget.RelativeLayout;
 
 import com.bandwidth.androidreference.R;
 import com.bandwidth.androidreference.activity.CallActivity;
-import com.bandwidth.androidreference.intent.BWSipIntent;
+import com.bandwidth.androidreference.intent.BWIntent;
 import com.bandwidth.androidreference.utils.NumberUtils;
 
 import cz.acrobits.libsoftphone.Instance;
@@ -83,8 +83,8 @@ public class DialerFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 Intent callIntent = new Intent(getActivity(), CallActivity.class);
-                callIntent.setAction(BWSipIntent.PHONE_CALL);
-                callIntent.putExtra(BWSipIntent.PHONE_CALL, editTextNumber.getText().toString());
+                callIntent.setAction(BWIntent.PHONE_CALL);
+                callIntent.putExtra(BWIntent.PHONE_CALL, editTextNumber.getText().toString());
                 getActivity().startActivity(callIntent);
 
                 editTextNumber.getText().clear();

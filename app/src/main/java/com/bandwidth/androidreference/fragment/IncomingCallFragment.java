@@ -20,7 +20,7 @@ import android.widget.TextView;
 import com.bandwidth.androidreference.R;
 import com.bandwidth.androidreference.activity.CallActivity;
 import com.bandwidth.androidreference.activity.IncomingCallActivity;
-import com.bandwidth.androidreference.intent.BWSipIntent;
+import com.bandwidth.androidreference.intent.BWIntent;
 
 public class IncomingCallFragment extends Fragment {
 
@@ -48,8 +48,8 @@ public class IncomingCallFragment extends Fragment {
                 vibrator.cancel();
 
                 Intent intent = new Intent(activity, CallActivity.class);
-                intent.setAction(BWSipIntent.ANSWER_CALL);
-                intent.putExtra(BWSipIntent.PHONE_CALL, textViewIncomingNumber.getText().toString());
+                intent.setAction(BWIntent.ANSWER_CALL);
+                intent.putExtra(BWIntent.PHONE_CALL, textViewIncomingNumber.getText().toString());
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 activity.startActivity(intent);
                 activity.finish();
@@ -64,8 +64,8 @@ public class IncomingCallFragment extends Fragment {
                 vibrator.cancel();
 
                 Intent intent = new Intent(activity, CallActivity.class);
-                intent.setAction(BWSipIntent.DECLINE_CALL);
-                intent.putExtra(BWSipIntent.DECLINE_CALL, textViewIncomingNumber.getText().toString());
+                intent.setAction(BWIntent.DECLINE_CALL);
+                intent.putExtra(BWIntent.DECLINE_CALL, textViewIncomingNumber.getText().toString());
                 broadcastManager.sendBroadcast(intent);
 
                 activity.finish();

@@ -22,7 +22,7 @@ import com.bandwidth.androidreference.activity.MainActivity;
 import com.bandwidth.androidreference.R;
 import com.bandwidth.androidreference.utils.SaveManager;
 import com.bandwidth.androidreference.data.User;
-import com.bandwidth.androidreference.intent.BWSipIntent;
+import com.bandwidth.androidreference.intent.BWIntent;
 
 
 public class RegisterFragment extends Fragment {
@@ -85,7 +85,7 @@ public class RegisterFragment extends Fragment {
                     if (user != null) {
                         user.getEndpoint().getCredentials().setPassword(password);
                         SaveManager.saveUser(getActivity(), user);
-                        broadcastManager.sendBroadcast(new Intent(BWSipIntent.RENEW_REGISTRATION));
+                        broadcastManager.sendBroadcast(new Intent(BWIntent.RENEW_REGISTRATION));
                         ((MainActivity)getActivity()).goToFragment(new DialerFragment());
                         ((MainActivity) getActivity()).setMenuVisible(true);
                         Toast.makeText(getActivity(), getResources().getString(R.string.toast_register_message, user.getPhoneNumber()), Toast.LENGTH_LONG).show();

@@ -6,7 +6,7 @@ import android.support.v7.app.ActionBarActivity;
 
 import com.bandwidth.androidreference.R;
 import com.bandwidth.androidreference.fragment.CallFragment;
-import com.bandwidth.androidreference.intent.BWSipIntent;
+import com.bandwidth.androidreference.intent.BWIntent;
 import com.bandwidth.androidreference.utils.NotificationHelper;
 
 public class CallActivity extends ActionBarActivity {
@@ -20,13 +20,13 @@ public class CallActivity extends ActionBarActivity {
 
             NotificationHelper.clearIncomingCallNotification(this);
 
-            if (getIntent().getAction().equals(BWSipIntent.DECLINE_CALL)) {
+            if (getIntent().getAction().equals(BWIntent.DECLINE_CALL)) {
                 finish();
                 overridePendingTransition(R.animator.animation_none, R.animator.animation_none);
             } else {
                 setContentView(R.layout.activity_main);
                 CallFragment callFragment = new CallFragment();
-                callFragment.setPhoneNumber(getIntent().getStringExtra(BWSipIntent.PHONE_CALL));
+                callFragment.setPhoneNumber(getIntent().getStringExtra(BWIntent.PHONE_CALL));
                 getSupportFragmentManager().beginTransaction()
                         .add(R.id.container, callFragment)
                         .commit();

@@ -15,7 +15,7 @@ import android.widget.TextView;
 import com.bandwidth.androidreference.CallService;
 import com.bandwidth.androidreference.activity.MainActivity;
 import com.bandwidth.androidreference.R;
-import com.bandwidth.androidreference.intent.BWSipIntent;
+import com.bandwidth.androidreference.intent.BWIntent;
 import com.bandwidth.androidreference.utils.SaveManager;
 import com.bandwidth.androidreference.data.User;
 
@@ -35,7 +35,7 @@ public class AccountInfoFragment extends Fragment {
         broadcastManager = LocalBroadcastManager.getInstance(this.getActivity());
         intentReceiver = new IntentReceiver();
         IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(BWSipIntent.REGISTRATION);
+        intentFilter.addAction(BWIntent.REGISTRATION);
         broadcastManager.registerReceiver(intentReceiver, intentFilter);
 
         View rootView = inflater.inflate(R.layout.fragment_account_info, container, false);
@@ -72,8 +72,8 @@ public class AccountInfoFragment extends Fragment {
     private class IntentReceiver extends BroadcastReceiver
     {
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(BWSipIntent.REGISTRATION)) {
-                RegistrationState registrationState = (RegistrationState) intent.getSerializableExtra(BWSipIntent.REGISTRATION);
+            if (intent.getAction().equals(BWIntent.REGISTRATION)) {
+                RegistrationState registrationState = (RegistrationState) intent.getSerializableExtra(BWIntent.REGISTRATION);
                 textViewRegistrationState.setText(registrationState.getLabel());
             }
         }

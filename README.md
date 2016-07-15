@@ -59,7 +59,7 @@ repositories {
 }
 
 dependencies {
-    compile(name: 'bwsip-framework', ext: 'aar')
+    compile(name: 'libSoftphone-debug', ext: 'aar')
 }
 ```
 

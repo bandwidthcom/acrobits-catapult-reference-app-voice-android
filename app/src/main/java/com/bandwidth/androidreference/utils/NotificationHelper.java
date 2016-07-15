@@ -10,7 +10,7 @@ import android.support.v4.app.NotificationCompat;
 
 import com.bandwidth.androidreference.R;
 import com.bandwidth.androidreference.activity.CallActivity;
-import com.bandwidth.androidreference.intent.BWSipIntent;
+import com.bandwidth.androidreference.intent.BWIntent;
 
 public class NotificationHelper {
 
@@ -22,12 +22,12 @@ public class NotificationHelper {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
 
         Intent answerIntent = new Intent(context, CallActivity.class);
-        answerIntent.setAction(BWSipIntent.ANSWER_CALL);
+        answerIntent.setAction(BWIntent.ANSWER_CALL);
         answerIntent.addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
         PendingIntent answerPendingIntent = PendingIntent.getActivity(context, -1, answerIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 
         Intent declineIntent = new Intent(context, CallActivity.class);
-        declineIntent.setAction(BWSipIntent.DECLINE_CALL);
+        declineIntent.setAction(BWIntent.DECLINE_CALL);
         declineIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         declineIntent.addFlags(Intent.FLAG_ACTIVITY_NO_USER_ACTION);
         declineIntent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
