@@ -1,6 +1,6 @@
 package com.bandwidth.androidreference.intent;
 
-public class BWSipIntent {
+public class BWIntent {
     public static final String REGISTRATION = "com.bandwidth.androidreference.REGISTRATION";
     public static final String DEREGISTER = "com.bandwidth.androidreference.DEREGISTER";
     public static final String RENEW_REGISTRATION = "com.bandwidth.androidreference.RENEW_REGISTRATION";

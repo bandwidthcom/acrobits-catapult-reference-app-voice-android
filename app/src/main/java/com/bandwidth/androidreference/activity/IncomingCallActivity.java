@@ -7,7 +7,7 @@ import android.support.v7.app.ActionBarActivity;
 
 import com.bandwidth.androidreference.R;
 import com.bandwidth.androidreference.fragment.IncomingCallFragment;
-import com.bandwidth.androidreference.intent.BWSipIntent;
+import com.bandwidth.androidreference.intent.BWIntent;
 
 public class IncomingCallActivity extends ActionBarActivity {
 
@@ -19,7 +19,7 @@ public class IncomingCallActivity extends ActionBarActivity {
         if (savedInstanceState == null) {
             Intent intent = getIntent();
             IncomingCallFragment incomingCallFragment = new IncomingCallFragment();
-            incomingCallFragment.setFromNumber(intent.getStringExtra(BWSipIntent.INCOMING_CALL));
+            incomingCallFragment.setFromNumber(intent.getStringExtra(BWIntent.INCOMING_CALL));
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.container, incomingCallFragment)
                     .commit();

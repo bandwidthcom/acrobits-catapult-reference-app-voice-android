@@ -14,7 +14,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.bandwidth.androidreference.activity.IncomingCallActivity;
-import com.bandwidth.androidreference.intent.BWSipIntent;
+import com.bandwidth.androidreference.intent.BWIntent;
 import com.bandwidth.androidreference.utils.NotificationHelper;
 import com.bandwidth.androidreference.utils.NumberUtils;
 import com.bandwidth.androidreference.utils.SaveManager;
@@ -60,16 +60,16 @@ public class CallService extends Service implements Listeners.OnIncomingCall,
             intentReceiver = new IntentReceiver();
             // Set up broadcast receiver
             IntentFilter intentFilter = new IntentFilter();
-            intentFilter.addAction(BWSipIntent.ANSWER_CALL);
-            intentFilter.addAction(BWSipIntent.DECLINE_CALL);
-            intentFilter.addAction(BWSipIntent.END_CALL);
-            intentFilter.addAction(BWSipIntent.PHONE_CALL);
-            intentFilter.addAction(BWSipIntent.MUTE);
-            intentFilter.addAction(BWSipIntent.UNMUTE);
-            intentFilter.addAction(BWSipIntent.SPEAKER);
-            intentFilter.addAction(BWSipIntent.EARPIECE);
-            intentFilter.addAction(BWSipIntent.RENEW_REGISTRATION);
-            intentFilter.addAction(BWSipIntent.DEREGISTER);
+            intentFilter.addAction(BWIntent.ANSWER_CALL);
+            intentFilter.addAction(BWIntent.DECLINE_CALL);
+            intentFilter.addAction(BWIntent.END_CALL);
+            intentFilter.addAction(BWIntent.PHONE_CALL);
+            intentFilter.addAction(BWIntent.MUTE);
+            intentFilter.addAction(BWIntent.UNMUTE);
+            intentFilter.addAction(BWIntent.SPEAKER);
+            intentFilter.addAction(BWIntent.EARPIECE);
+            intentFilter.addAction(BWIntent.RENEW_REGISTRATION);
+            intentFilter.addAction(BWIntent.DEREGISTER);
             LocalBroadcastManager.getInstance(this).registerReceiver(intentReceiver, intentFilter);
         }
 
@@ -119,8 +119,8 @@ public class CallService extends Service implements Listeners.OnIncomingCall,
             }
             else {
                 Intent intent = new Intent(getBaseContext(), IncomingCallActivity.class);
-                intent.setAction(BWSipIntent.INCOMING_CALL);
-                intent.putExtra(BWSipIntent.INCOMING_CALL, callEvent.getRemoteUser().getTransportUri());
+                intent.setAction(BWIntent.INCOMING_CALL);
+                intent.putExtra(BWIntent.INCOMING_CALL, callEvent.getRemoteUser().getTransportUri());
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 intent.addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
                 intent.addFlags(Intent.FLAG_FROM_BACKGROUND);
@@ -147,8 +147,8 @@ public class CallService extends Service implements Listeners.OnIncomingCall,
 
         LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
         Intent intent = new Intent();
-        intent.setAction(BWSipIntent.CALL_STATE);
-        intent.putExtra(BWSipIntent.CALL_STATE, state);
+        intent.setAction(BWIntent.CALL_STATE);
+        intent.putExtra(BWIntent.CALL_STATE, state);
         broadcastManager.sendBroadcast(intent);
 
         if (state.isTerminal()) {
@@ -159,8 +159,8 @@ public class CallService extends Service implements Listeners.OnIncomingCall,
     private void broadcastRegistrationState() {
         LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
         Intent intent = new Intent();
-        intent.setAction(BWSipIntent.REGISTRATION);
-        intent.putExtra(BWSipIntent.REGISTRATION, registrationState);
+        intent.setAction(BWIntent.REGISTRATION);
+        intent.putExtra(BWIntent.REGISTRATION, registrationState);
         broadcastManager.sendBroadcast(intent);
     }
 
@@ -261,34 +261,34 @@ public class CallService extends Service implements Listeners.OnIncomingCall,
     private class IntentReceiver extends BroadcastReceiver
     {
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(BWSipIntent.ANSWER_CALL)) {
+            if (intent.getAction().equals(BWIntent.ANSWER_CALL)) {
                 answerIncomingCall();
             }
-            else if (intent.getAction().equals(BWSipIntent.DECLINE_CALL)) {
+            else if (intent.getAction().equals(BWIntent.DECLINE_CALL)) {
                 declineIncomingCall();
             }
-            else if (intent.getAction().equals(BWSipIntent.END_CALL)) {
+            else if (intent.getAction().equals(BWIntent.END_CALL)) {
                 endCall();
             }
-            else if (intent.getAction().equals(BWSipIntent.PHONE_CALL)) {
-                makeCall(intent.getStringExtra(BWSipIntent.PHONE_CALL));
+            else if (intent.getAction().equals(BWIntent.PHONE_CALL)) {
+                makeCall(intent.getStringExtra(BWIntent.PHONE_CALL));
             }
-            else if (intent.getAction().equals(BWSipIntent.MUTE)) {
+            else if (intent.getAction().equals(BWIntent.MUTE)) {
                 Instance.Audio.setMuted(true);
             }
-            else if (intent.getAction().equals(BWSipIntent.UNMUTE)) {
+            else if (intent.getAction().equals(BWIntent.UNMUTE)) {
                 Instance.Audio.setMuted(false);
             }
-            else if (intent.getAction().equals(BWSipIntent.SPEAKER)) {
+            else if (intent.getAction().equals(BWIntent.SPEAKER)) {
                 Instance.Audio.setCallAudioRoute(AudioRoute.Speaker);
             }
-            else if (intent.getAction().equals(BWSipIntent.EARPIECE)) {
+            else if (intent.getAction().equals(BWIntent.EARPIECE)) {
                 Instance.Audio.setCallAudioRoute(AudioRoute.Headset);
             }
-            else if (intent.getAction().equals(BWSipIntent.RENEW_REGISTRATION)) {
+            else if (intent.getAction().equals(BWIntent.RENEW_REGISTRATION)) {
                 renewRegistration();
             }
-            else if (intent.getAction().equals(BWSipIntent.DEREGISTER)) {
+            else if (intent.getAction().equals(BWIntent.DEREGISTER)) {
                 deregister();
             }
         }

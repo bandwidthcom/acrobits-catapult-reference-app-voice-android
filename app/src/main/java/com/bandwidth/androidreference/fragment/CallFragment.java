@@ -21,7 +21,7 @@ import android.widget.ToggleButton;
 import com.bandwidth.androidreference.CallService;
 import com.bandwidth.androidreference.R;
 import com.bandwidth.androidreference.activity.CallActivity;
-import com.bandwidth.androidreference.intent.BWSipIntent;
+import com.bandwidth.androidreference.intent.BWIntent;
 import com.bandwidth.androidreference.utils.NumberUtils;
 
 import java.util.Date;
@@ -111,10 +111,10 @@ public class CallFragment extends Fragment {
             public void onClick(View v) {
                 Intent intent = new Intent();
                 if (buttonMute.isChecked()) {
-                    intent.setAction(BWSipIntent.MUTE);
+                    intent.setAction(BWIntent.MUTE);
                 }
                 else {
-                    intent.setAction(BWSipIntent.UNMUTE);
+                    intent.setAction(BWIntent.UNMUTE);
                 }
                 broadcastManager.sendBroadcast(intent);
             }
@@ -125,10 +125,10 @@ public class CallFragment extends Fragment {
             public void onClick(View v) {
                 Intent intent = new Intent();
                 if (buttonSpeaker.isChecked()) {
-                    intent.setAction(BWSipIntent.SPEAKER);
+                    intent.setAction(BWIntent.SPEAKER);
                 }
                 else {
-                    intent.setAction(BWSipIntent.EARPIECE);
+                    intent.setAction(BWIntent.EARPIECE);
                 }
                 broadcastManager.sendBroadcast(intent);
             }
@@ -137,7 +137,7 @@ public class CallFragment extends Fragment {
         buttonEndCall.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                broadcastManager.sendBroadcast(new Intent(BWSipIntent.END_CALL));
+                broadcastManager.sendBroadcast(new Intent(BWIntent.END_CALL));
                 activity.finish();
             }
         });
@@ -180,7 +180,7 @@ public class CallFragment extends Fragment {
         }
         wakeLock.acquire();
         IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(BWSipIntent.CALL_STATE);
+        intentFilter.addAction(BWIntent.CALL_STATE);
         broadcastManager.registerReceiver(intentReceiver, intentFilter);
     }
 
@@ -208,8 +208,8 @@ public class CallFragment extends Fragment {
     private class IntentReceiver extends BroadcastReceiver
     {
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(BWSipIntent.CALL_STATE)) {
-                Call.State callState = (Call.State) intent.getSerializableExtra(BWSipIntent.CALL_STATE);
+            if (intent.getAction().equals(BWIntent.CALL_STATE)) {
+                Call.State callState = (Call.State) intent.getSerializableExtra(BWIntent.CALL_STATE);
                 if (callState.isTerminal()) {
                     getActivity().finish();
                 }

@@ -20,7 +20,7 @@ import com.bandwidth.androidreference.fragment.AccountInfoFragment;
 import com.bandwidth.androidreference.fragment.DialerFragment;
 import com.bandwidth.androidreference.fragment.IncomingCallFragment;
 import com.bandwidth.androidreference.fragment.RegisterFragment;
-import com.bandwidth.androidreference.intent.BWSipIntent;
+import com.bandwidth.androidreference.intent.BWIntent;
 import com.bandwidth.androidreference.utils.SaveManager;
 
 public class MainActivity extends ActionBarActivity implements FragmentManager.OnBackStackChangedListener {
@@ -83,9 +83,9 @@ public class MainActivity extends ActionBarActivity implements FragmentManager.O
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        if (intent.getAction().equals(BWSipIntent.INCOMING_CALL)) {
+        if (intent.getAction().equals(BWIntent.INCOMING_CALL)) {
             IncomingCallFragment incomingCallFragment = new IncomingCallFragment();
-            incomingCallFragment.setFromNumber(intent.getStringExtra(BWSipIntent.INCOMING_CALL));
+            incomingCallFragment.setFromNumber(intent.getStringExtra(BWIntent.INCOMING_CALL));
             goToFragment(incomingCallFragment, true);
         }
     }
@@ -177,7 +177,7 @@ public class MainActivity extends ActionBarActivity implements FragmentManager.O
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         SaveManager.removeUser(mainActivity);
-                        broadcastManager.sendBroadcast(new Intent(BWSipIntent.DEREGISTER));
+                        broadcastManager.sendBroadcast(new Intent(BWIntent.DEREGISTER));
                         goToFragment(new RegisterFragment());
                     }
                 })
