@@ -1,15 +1,17 @@
 Bandwidth Voice Reference Android App
 ===============================
 
-This project is a fully functioning Android app that leverages the BWsip framework to register users, and make and receive calls. Bandwidth’s provides the Mobile SDK and Reference Apps as “Beta”, free of charge to try and use.  If you are looking for a fully supported commercial Mobile SDK for iOS and Android compatible with Bandwidth platform and services, please contact us. 
+This project is a fully functioning Android app that leverages the Acrobits SDK to register users, and make and receive calls. Acrobits provides a fully featured commercial SDK for mobile applications that wish to integrate voice capabilities and is fully compatible with Bandwidth's endpoint.
 
 ![App screenshot](https://github.com/bandwidthcom/catapult-reference-app-voice-android/blob/master/screenshot.png)
+
+This application comes with a trial version of the Acrobits SDK that terminate calls after 1 minute.
 
 ##Before you start
 Before you get started, there are a few things that you will need to have set up first.
  - [Android Studio](http://developer.android.com/sdk/index.html)
  - [Android SDK set up and configured](http://developer.android.com/sdk/installing/index.html)
- - A [device](http://developer.android.com/tools/device.html) or an [emulator](http://developer.android.com/tools/devices/emulator.html) (ARMv7) to debug the app on
+ - A [device](http://developer.android.com/tools/device.html) or an [emulator](http://developer.android.com/tools/devices/emulator.html) to debug the app on
  - An account set up on the [Bandwidth Application Platform](https://catapult.inetwork.com/)
 
 ###Setting up your Bandwidth account
@@ -44,7 +46,10 @@ Just grab this repository by running:
  - You can also dial a phone number and tap Call to place a call
 
 ## Adding voice support to your own app
-The only file you will need to add to your app is ```app/libs/bwsip-framework.aar``` and add it as a dependency:
+
+Please contact Acrobits for a commercial version of the SDK. They will provide you with a license and detailed instructions on how to integrate the SDK into your application.
+
+If you only want to try it out, copy the file on ```app/libs/libSoftphone-debug.aar``` and add it as a dependency:
 
 ```
 repositories {
@@ -60,7 +65,6 @@ dependencies {
 
 You can then use the code provided by this sample app as the basis for your own implementation.
 
-More BWSip resources:
+More Acrobits resources:
 
-* [Dev Guide](https://github.com/bandwidthcom/catapult-reference-app-voice-android/blob/master/bwsip-dev-guide-android.pdf)
-* [API Reference](https://github.com/bandwidthcom/catapult-reference-app-voice-android/blob/master/bwsip-api-android.pdf)
+[Provide links to Acrobits]
