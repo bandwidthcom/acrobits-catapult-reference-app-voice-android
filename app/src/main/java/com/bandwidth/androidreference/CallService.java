@@ -18,6 +18,7 @@ import com.bandwidth.androidreference.intent.BWIntent;
 import com.bandwidth.androidreference.utils.NotificationHelper;
 import com.bandwidth.androidreference.utils.NumberUtils;
 import com.bandwidth.androidreference.utils.SaveManager;
+import com.google.firebase.iid.FirebaseInstanceId;
 
 import java.util.Date;
 
@@ -40,7 +41,6 @@ public class CallService extends Service implements Listeners.OnIncomingCall,
     private static IntentReceiver intentReceiver;
     private static Long callStartTime;
     private static RegistrationState registrationState = RegistrationState.NotRegistered;
-    private static boolean isLibraryInitialized;
 
     private final Listeners listeners = new Listeners();
 
@@ -73,17 +73,6 @@ public class CallService extends Service implements Listeners.OnIncomingCall,
             LocalBroadcastManager.getInstance(this).registerReceiver(intentReceiver, intentFilter);
         }
 
-        Instance.loadLibrary(getApplicationContext());
-        Xml prov = new Xml("provisioning");
-
-        Xml saas = new Xml("saas");
-        saas.replaceChild("identifier", getString(R.string.acrobits_license_id));
-        prov.replaceChild(saas);
-
-        if (!isLibraryInitialized) {
-            isLibraryInitialized = Instance.init(getApplicationContext(), prov);
-        }
-
         Instance.setObserver(listeners);
         listeners.register(this);
         Instance.State.update(Instance.State.Background);
@@ -112,7 +101,7 @@ public class CallService extends Service implements Listeners.OnIncomingCall,
             currentCall = callEvent;
             callStartTime = new Date().getTime();
 
-            KeyguardManager keyguardManager = (KeyguardManager) getBaseContext().getSystemService(Context.KEYGUARD_SERVICE);
+            KeyguardManager keyguardManager = (KeyguardManager) getApplicationContext().getSystemService(Context.KEYGUARD_SERVICE);
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && !keyguardManager.inKeyguardRestrictedInputMode()) {
                 NotificationHelper.placeIncomingCallNotification(getBaseContext(), callEvent.getRemoteUser().getTransportUri());
@@ -181,14 +170,22 @@ public class CallService extends Service implements Listeners.OnIncomingCall,
                 accountXml.setChildValue("host", SaveManager.getRealm(this));
                 accountXml.setChildValue("natTraversal", "ice");
                 accountXml.setChildValue("pushMethod", "tunnel");
-                accountXml.setChildValue("sipisHost", "https://ec2-107-21-79-106.compute-1.amazonaws.com/sipis/");
-                accountXml.setChildValue("sipisRegServer", "https://ec2-107-21-79-106.compute-1.amazonaws.com/sipis/");
+                accountXml.setChildValue("sipisHost", getString(R.string.push_server_host));
+                accountXml.setChildValue("sipisRegServer", getString(R.string.push_server_host));
+                // This prefix is used for load balancing. Set to 0 to disable load balancing.
+                accountXml.setChildValue("sipisHostPrefixLength", "0");
                 Instance.Registration.saveAccount(accountXml);
             }
-            Instance.State.update(Instance.State.Active);
 
             registrationState = Instance.Registration.getRegistrationState(TEST_ACCOUNT_ID);
             broadcastRegistrationState();
+
+            String pushToken = FirebaseInstanceId.getInstance().getToken();
+            if (pushToken != null) {
+                Instance.Notifications.Push.setRegistrationId(pushToken);
+            }
+
+            Instance.State.update(Instance.State.Active);
         }
     }
 
