@@ -19,7 +19,7 @@ Before you get started, there are a few things that you will need to have set up
  
 ###Setting up your application server
  - [Need to get detailed instructions for this part]
-
+ 
 ##Get the code
 Just grab this repository by running:
 
@@ -35,6 +35,59 @@ Just grab this repository by running:
  - Replace the value for the `application_server_url` key with the URL of the server you set up in the steps above
  
 > If you do not do this step, you will see an alert dialog when you try to open the app, and the app will not do anything else.
+
+##Set up push notifications
+
+In order to be able to receive incoming calls via push notifications, you will need to set up the application to register for push notifications and also
+a server that will keep your SIP registration active while the application is on background. This server will send a push notification when an incoming call arrives.
+
+To set up the server, you will need to get 2 server packages from Acrobits: `pnmediator` and `SIPIS`. These 2 servers need to be installed on a Debian machine.
+
+###Server set up
+
+Follow [this](https://doc.acrobits.net/sipis/installation.html) guide to install SIPIS. You will need to ask Acrobits for a username and password to download the package.
+
+To install pnmediator, simply install the Debian package provided by Acrobits. 
+To configure it, you will need to copy an example configuration file and change it to add your GCM api key:
+
+    sudo cp /etc/pnmediator2/settings/com.example.android /etc/pnmediator2/settings/com.bandwidth.androidreference
+    sudo nano /etc/pnmediator2/settings/com.bandwidth.androidreference
+
+Change `ApiKey=""` to use your GCM API key, then restart the pnmediator service:
+
+    sudo systemctl restart pnmediator2.socket
+
+Now that we have pnmediator installed, we need to configure SIPIS to use it. Edit `/etc/sipis/Settings.xml` and chenge the `Host` and `Port` and `RequiresTls` on `NotificationServer`:
+
+    <NotificationServers>
+        <NotificationServer
+            Name="*"
+            Host="localhost"
+            Port="5662"
+            Premium="No"
+            RequiresTls="No">
+        </NotificationServer>
+    </NotificationServers>
+
+Save the file and restart SIPIS:
+
+    sudo systemctl restart sipis
+
+After this, your servers are ready to be used by the application.
+
+###Application set up
+
+To set up the application, follow these steps to create your credentials on Firebase/GCM and download the configuration file to `app/google-services.json`:
+
+ - Create a Firebase project in the [Firebase console](https://console.firebase.google.com/).
+ - Click Add Firebase to your Android app and follow the setup steps.
+ - When prompted, enter your app's package name (you can change this app's package name if necessary). It's important to enter the package name your app is using; this can only be set when you add an app to your Firebase project.
+ - At the end, you'll download a `google-services.json` file. You can download this file again at any time.
+ - If you haven't done so already, copy this into your app/ folder.
+
+The application will take care of registering the device if this file is present.
+
+Replace the `push_server_host` variable on `app/src/main/res/values/strings.xml` with your push server's hostname.
 
 ##Run the app
  - Click the Run button in Android Studio
