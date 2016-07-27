@@ -40,7 +40,6 @@ public class CallService extends Service implements Listeners.OnIncomingCall,
     private static IntentReceiver intentReceiver;
     private static Long callStartTime;
     private static RegistrationState registrationState = RegistrationState.NotRegistered;
-    private static boolean isLibraryInitialized;
 
     private final Listeners listeners = new Listeners();
 
@@ -73,17 +72,6 @@ public class CallService extends Service implements Listeners.OnIncomingCall,
             LocalBroadcastManager.getInstance(this).registerReceiver(intentReceiver, intentFilter);
         }
 
-        Instance.loadLibrary(getApplicationContext());
-        Xml prov = new Xml("provisioning");
-
-        Xml saas = new Xml("saas");
-        saas.replaceChild("identifier", getString(R.string.acrobits_license_id));
-        prov.replaceChild(saas);
-
-        if (!isLibraryInitialized) {
-            isLibraryInitialized = Instance.init(getApplicationContext(), prov);
-        }
-
         Instance.setObserver(listeners);
         listeners.register(this);
         Instance.State.update(Instance.State.Background);
@@ -112,7 +100,7 @@ public class CallService extends Service implements Listeners.OnIncomingCall,
             currentCall = callEvent;
             callStartTime = new Date().getTime();
 
-            KeyguardManager keyguardManager = (KeyguardManager) getBaseContext().getSystemService(Context.KEYGUARD_SERVICE);
+            KeyguardManager keyguardManager = (KeyguardManager) getApplicationContext().getSystemService(Context.KEYGUARD_SERVICE);
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && !keyguardManager.inKeyguardRestrictedInputMode()) {
                 NotificationHelper.placeIncomingCallNotification(getBaseContext(), callEvent.getRemoteUser().getTransportUri());
@@ -179,13 +167,13 @@ public class CallService extends Service implements Listeners.OnIncomingCall,
                 accountXml.setChildValue("username", SaveManager.getCredUsername(this));
                 accountXml.setChildValue("password", SaveManager.getPassword(this));
                 accountXml.setChildValue("host", SaveManager.getRealm(this));
-                accountXml.setChildValue("natTraversal", "ice");
                 Instance.Registration.saveAccount(accountXml);
             }
-            Instance.State.update(Instance.State.Active);
 
             registrationState = Instance.Registration.getRegistrationState(TEST_ACCOUNT_ID);
             broadcastRegistrationState();
+
+            Instance.State.update(Instance.State.Active);
         }
     }
 

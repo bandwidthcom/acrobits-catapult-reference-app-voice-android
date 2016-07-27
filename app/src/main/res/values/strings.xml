@@ -4,7 +4,7 @@
     <string name="application_server_url">https://YOUR_APPLICATION_SERVER_URL_GOES_HERE</string>
 
     <!-- Before running this application, change the variable below to your Acrobits license id -->
-    <string name="acrobits_license_id"></string>
+    <string name="acrobits_license_id">libsoftphone.saas.bandwith.android</string>
 
     <string name="app_name">Bandwidth Phone</string>
     <string name="username">Username</string>
